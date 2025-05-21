@@ -1,12 +1,14 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import axios from 'axios';
 
 dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-// ✅ هذا السطر هو الأهم، تأكد أنه موجود ومُعد بشكل صحيح:
+// ✅ تفعيل CORS للسماح فقط لموقع Vercel
 app.use(cors({
   origin: 'https://stock-recommendation-app.vercel.app',
   methods: ['GET', 'POST', 'OPTIONS'],
@@ -15,69 +17,40 @@ app.use(cors({
 
 app.use(express.json());
 
-// بقية الكود...
+app.get('/', (req, res) => {
+  res.send('🟢 الخادم يعمل بنجاح');
+});
 
-
-// نقطة نهاية للتوصيات الذكية
+// ✅ مثال على endpoint لجلب التوصية
 app.post('/recommend', async (req, res) => {
-  const { symbol } = req.body;
-
   try {
-    // 1. جلب بيانات السوق من Yahoo Finance API
-    const marketRes = await axios.get(
-      `https://yahoo-finance15.p.rapidapi.com/api/yahoo/qu/quote/${symbol}`,
-      {
-        headers: {
-          'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
-          'X-RapidAPI-Host': 'yahoo-finance15.p.rapidapi.com'
-        }
+    const { symbol } = req.body;
+
+    const prompt = `حلل سهم ${symbol} بناءً على التحليل الفني. قدم التوصية مع سعر الشراء، الهدف، وقف الخسارة.`;
+
+    const aiRes = await axios.post('https://api.openai.com/v1/chat/completions', {
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: 'أنت خبير في سوق الأسهم' },
+        { role: 'user', content: prompt }
+      ]
+    }, {
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json'
       }
-    );
-
-    const stock = marketRes.data[0];
-
-    const { regularMarketPrice, regularMarketDayHigh, regularMarketDayLow, regularMarketVolume } = stock;
-
-    // 2. إرسال البيانات إلى OpenAI لتوليد التوصية
-    const prompt = `السهم: ${symbol}\nالسعر الحالي: ${regularMarketPrice}\nأعلى سعر اليوم: ${regularMarketDayHigh}\nأدنى سعر اليوم: ${regularMarketDayLow}\nالحجم: ${regularMarketVolume}\n\nقدّم توصية فنية: سعر الشراء، هدف البيع، ووقف الخسارة.`;
-
-    const aiRes = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
-      {
-        model: 'gpt-3.5-turbo',
-        messages: [
-          { role: 'system', content: 'أنت محلل فني للأسهم.' },
-          { role: 'user', content: prompt }
-        ]
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
-    const recommendation = aiRes.data.choices[0].message.content;
-
-    // 3. إرسال البيانات إلى الواجهة
-    res.json({
-      symbol,
-      currentPrice: regularMarketPrice,
-      high: regularMarketDayHigh,
-      low: regularMarketDayLow,
-      volume: regularMarketVolume,
-      recommendation
     });
 
+    const recommendation = aiRes.data.choices[0]?.message?.content || '❌ لم يتم توليد توصية.';
+
+    res.json({ recommendation });
+
   } catch (err) {
-    console.error('❌ خطأ:', err.response?.data || err.message);
-    res.status(500).json({ error: 'فشل في جلب البيانات أو التوصية' });
+    console.error('❌ خطأ في جلب التوصية:', err.response?.data || err.message);
+    res.status(500).json({ error: 'حدث خطأ في جلب التوصية.' });
   }
 });
 
-// بدء الخادم
-const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`✅ الخادم يعمل على المنفذ ${PORT}`);
+  console.log(`🚀 Server is running on port ${PORT}`);
 });
