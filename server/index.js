@@ -1,13 +1,16 @@
 import express from 'express';
 import cors from 'cors';
-import axios from 'axios';
 import dotenv from 'dotenv';
 
-// تحميل المتغيرات من ملف .env
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+// ✅ تفعيل CORS مع السماح لموقع Vercel فقط
+app.use(cors({
+  origin: 'https://stock-recommendation-app.vercel.app'
+}));
+
 app.use(express.json());
 
 // نقطة نهاية للتوصيات الذكية
