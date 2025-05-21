@@ -6,12 +6,17 @@ dotenv.config();
 
 const app = express();
 
-// ✅ تفعيل CORS مع السماح لموقع Vercel فقط
+// ✅ هذا السطر هو الأهم، تأكد أنه موجود ومُعد بشكل صحيح:
 app.use(cors({
-  origin: 'https://stock-recommendation-app.vercel.app'
+  origin: 'https://stock-recommendation-app.vercel.app',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
+
+// بقية الكود...
+
 
 // نقطة نهاية للتوصيات الذكية
 app.post('/recommend', async (req, res) => {
