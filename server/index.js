@@ -21,7 +21,6 @@ app.get('/', (req, res) => {
   res.send('🟢 الخادم يعمل بنجاح');
 });
 
-// ✅ مثال على endpoint لجلب التوصية
 app.post('/recommend', async (req, res) => {
   try {
     const { symbol } = req.body;
