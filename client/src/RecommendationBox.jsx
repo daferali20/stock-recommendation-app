@@ -9,7 +9,7 @@ function RecommendationBox() {
   const fetchRecommendation = async () => {
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:5000/recommend', { symbol });
+const res = await axios.post('https://stock-recommendation-server.onrender.com/recommend', { symbol });
       setRecommendation(res.data.recommendation);
     } catch (err) {
       setRecommendation('حدث خطأ في جلب التوصية.');
