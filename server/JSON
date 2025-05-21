@@ -1,0 +1,429 @@
+{
+  "meta": {
+    "version": "v1.0",
+    "status": 200,
+    "copywrite": "https://apicalls.io",
+    "date": "2025-05-22",
+    "total": 52,
+    "page": 1,
+    "processedTime": "2025-05-21T16:06:53.974003Z"
+  },
+  "body": [
+    {
+      "ticker": "300844.SZ",
+      "companyshortname": "Guangzhou SPI Design Co Ltd",
+      "startdatetime": "2025-05-21T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 1,
+      "share_worth": 1
+    },
+    {
+      "ticker": "301179.SZ",
+      "companyshortname": "Jiangsu Zeyu Intelligent Electric Power Co Ltd",
+      "startdatetime": "2025-05-21T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 1,
+      "share_worth": 1
+    },
+    {
+      "ticker": "301359.SZ",
+      "companyshortname": "Dongnan Electronics Co Ltd",
+      "startdatetime": "2025-05-21T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 1,
+      "share_worth": 1
+    },
+    {
+      "ticker": "301600.SZ",
+      "companyshortname": "Flaircomm Microelectronics Inc",
+      "startdatetime": "2025-05-21T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 1,
+      "share_worth": 1
+    },
+    {
+      "ticker": "688568.SS",
+      "companyshortname": "Geovis Technology Co Ltd",
+      "startdatetime": "2025-05-21T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 1,
+      "share_worth": 1
+    },
+    {
+      "ticker": "COLAB.BO",
+      "companyshortname": "Colab Platforms Ltd",
+      "startdatetime": "2025-05-21T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 1,
+      "share_worth": 2
+    },
+    {
+      "ticker": "DFDV",
+      "companyshortname": "DeFi Development Corp",
+      "startdatetime": "2025-05-21T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 1,
+      "share_worth": 7
+    },
+    {
+      "ticker": "F6S0.F",
+      "companyshortname": "DeFi Development Corp",
+      "startdatetime": "2025-05-21T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 1,
+      "share_worth": 7
+    },
+    {
+      "ticker": "F6S0.MU",
+      "companyshortname": "DeFi Development Corp",
+      "startdatetime": "2025-05-21T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 1,
+      "share_worth": 7
+    },
+    {
+      "ticker": "MTI-F.BK",
+      "companyshortname": "Muang Thai Insurance PCL",
+      "startdatetime": "2025-05-21T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 1,
+      "share_worth": 10
+    },
+    {
+      "ticker": "MTI-R.BK",
+      "companyshortname": "Muang Thai Insurance PCL",
+      "startdatetime": "2025-05-21T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 1,
+      "share_worth": 10
+    },
+    {
+      "ticker": "MTI.BK",
+      "companyshortname": "Muang Thai Insurance PCL",
+      "startdatetime": "2025-05-21T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 1,
+      "share_worth": 10
+    },
+    {
+      "ticker": "U09.SI",
+      "companyshortname": "Avarga Ltd",
+      "startdatetime": "2025-05-21T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "001367.SZ",
+      "companyshortname": "Zhejiang Haisen Pharmaceutical Co Ltd",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 1,
+      "share_worth": 1
+    },
+    {
+      "ticker": "001380.SZ",
+      "companyshortname": "Hwaway Technology Corp Ltd",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 1,
+      "share_worth": 1
+    },
+    {
+      "ticker": "0RNP.IL",
+      "companyshortname": "Avantium NV",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "1232.HK",
+      "companyshortname": "Golden Wheel Tiandi Holdings Co Ltd",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "131090.KQ",
+      "companyshortname": "SECUVE Co Ltd",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 5,
+      "share_worth": 1
+    },
+    {
+      "ticker": "1CJ.F",
+      "companyshortname": "Magnum Goldcorp Inc",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 2,
+      "share_worth": 1
+    },
+    {
+      "ticker": "2038.HK",
+      "companyshortname": "FIH Mobile Ltd",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "208710.KQ",
+      "companyshortname": "Photon Co Ltd",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 5,
+      "share_worth": 1
+    },
+    {
+      "ticker": "27V.BE",
+      "companyshortname": "Avantium NV",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "27V.DU",
+      "companyshortname": "Avantium NV",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "27V.F",
+      "companyshortname": "Avantium NV",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "27V.MU",
+      "companyshortname": "Avantium NV",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "27V.SG",
+      "companyshortname": "Avantium NV",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "301613.SZ",
+      "companyshortname": "Alnera Aluminium Co Ltd",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 1,
+      "share_worth": 1
+    },
+    {
+      "ticker": "688611.SS",
+      "companyshortname": "Hangzhou Kelin Electric Co Ltd",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 1,
+      "share_worth": 1
+    },
+    {
+      "ticker": "AVTX.AS",
+      "companyshortname": "Avantium NV",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "AVTX.BR",
+      "companyshortname": "Avantium NV",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "AVTXF",
+      "companyshortname": "Avantium NV",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "AVTXa.XC",
+      "companyshortname": "Avantium NV",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "CDT",
+      "companyshortname": "Conduit Pharmaceuticals Inc",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 15,
+      "share_worth": 1
+    },
+    {
+      "ticker": "FUTUREKID.KW",
+      "companyshortname": "Future Kid Entertainment and Real Estate Co",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 100,
+      "share_worth": 103
+    },
+    {
+      "ticker": "FW3.DU",
+      "companyshortname": "FIH Mobile Ltd",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "FW3.F",
+      "companyshortname": "FIH Mobile Ltd",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "FW3.MU",
+      "companyshortname": "FIH Mobile Ltd",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "FW3.SG",
+      "companyshortname": "FIH Mobile Ltd",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "FXCNF",
+      "companyshortname": "FIH Mobile Ltd",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "FXCNY",
+      "companyshortname": "FIH Mobile Ltd",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 5,
+      "share_worth": 1
+    },
+    {
+      "ticker": "HVH.VN",
+      "companyshortname": "HVC Investment and Technology JSC",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 100,
+      "share_worth": 107
+    },
+    {
+      "ticker": "MGI.V",
+      "companyshortname": "Magnum Goldcorp Inc",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 2,
+      "share_worth": 1
+    },
+    {
+      "ticker": "MGIDF",
+      "companyshortname": "Magnum Goldcorp Inc",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 2,
+      "share_worth": 1
+    },
+    {
+      "ticker": "T15B.BE",
+      "companyshortname": "Tectonic Metals Inc",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "T15B.F",
+      "companyshortname": "Tectonic Metals Inc",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "T15B.MU",
+      "companyshortname": "Tectonic Metals Inc",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "T15B.SG",
+      "companyshortname": "Tectonic Metals Inc",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "TECT.V",
+      "companyshortname": "Tectonic Metals Inc",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "TETOF",
+      "companyshortname": "Tectonic Metals Inc",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 10,
+      "share_worth": 1
+    },
+    {
+      "ticker": "UOKA",
+      "companyshortname": "MDJM Ltd",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 25,
+      "share_worth": 1
+    },
+    {
+      "ticker": "ZK70.BE",
+      "companyshortname": "Conduit Pharmaceuticals Inc",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 15,
+      "share_worth": 1
+    },
+    {
+      "ticker": "ZK70.F",
+      "companyshortname": "Conduit Pharmaceuticals Inc",
+      "startdatetime": "2025-05-20T04:00:00.000Z",
+      "optionable": false,
+      "old_share_worth": 15,
+      "share_worth": 1
+    }
+  ]
+}
