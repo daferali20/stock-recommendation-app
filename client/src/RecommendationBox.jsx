@@ -9,9 +9,9 @@ const RecommendationBox = () => {
   const getRecommendation = async () => {
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:3001/recommend", {
-        symbol,
-      });
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/recommend`, {
+  symbol: symbol.toUpperCase(),
+});
       setRecommendation(res.data.recommendation);
     } catch (err) {
       setRecommendation("⚠️ حدث خطأ في جلب التوصية.");
