@@ -1,16 +1,12 @@
 {
-  "name": "stock-recommendation-server",
-  "type": "module",
+  "name": "server",
+  "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
-  "license": "MIT"
-}
-  "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
-    "axios": "^1.4.0"
+  "engines": {
+    "node": "18.x"
   }
+}
 
