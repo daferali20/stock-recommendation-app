@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000;
 
 // ✅ إعداد CORS للسماح للواجهة بالاتصال بالخادم
 app.use(cors({
-  origin: 'https://stock-recommendation-app.vercel.app', // ضع رابط الواجهة هنا
+  origin: 'https://stock-recommendation-app-g2lr.onrender.com', // ضع رابط الواجهة هنا
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type'],
 }));
