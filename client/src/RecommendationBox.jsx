@@ -18,16 +18,12 @@ function RecommendationBox() {
     setRecommendation(null);
 
     try {
-      const res = await axios.post(
-        'https://stock-recommendation-server.onrender.com/recommend', 
-        { symbol: symbol.trim().toUpperCase() },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          timeout: 10000 // 10 ثواني timeout
-        }
-      );
+      const res = await fetch('https://stock-recommendation-server.onrender.com/recommend', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ symbol: symbol.trim().toUpperCase() }),
+});
+const data = await res.json();
       
       if (res.data && res.data.recommendation) {
         setRecommendation(res.data.recommendation);
