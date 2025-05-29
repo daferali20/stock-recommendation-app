@@ -16,3 +16,9 @@
     "vite": "^4.0.0"
   }
 }
+{
+  "symbol": "AAPL",
+  "recommendation": "شراء",
+  "priceTarget": 195.00,
+  "analysis": "تحسن في أرباح الربع الرابع..."
+}
