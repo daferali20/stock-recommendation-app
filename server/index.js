@@ -2,9 +2,17 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import axios from 'axios';
-
+const app = express();
+app.use(cors()); // السماح بالوصول من أي مصدر، مؤقتًا للتجربة
+app.use(express.json());
 dotenv.config();
-
+// تعريف الراوت /recommend
+app.post('/recommend', async (req, res) => {
+  // معالجتك هنا
+});
+app.listen(5000, () => {
+  console.log('Server listening on port 5000');
+});
 const app = express();
 const port = process.env.PORT || 5000;
 
