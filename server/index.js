@@ -1,3 +1,49 @@
+// في RecommendPage.jsx
+import { useState } from 'react';
+import axios from 'axios';
+
+export default function RecommendPage() {
+  const [symbol, setSymbol] = useState('AAPL');
+  const [result, setResult] = useState(null);
+
+  const fetchRecommendation = async () => {
+    try {
+      const res = await axios.get(`/recommend/${symbol}`);
+      setResult(res.data);
+    } catch (err) {
+      alert('فشل في جلب التوصية!');
+    }
+  };
+
+  return (
+    <div className="p-4 max-w-lg mx-auto">
+      <h2 className="text-xl font-bold mb-2">🔍 توصية لحظية</h2>
+      <input
+        type="text"
+        value={symbol}
+        onChange={(e) => setSymbol(e.target.value.toUpperCase())}
+        className="border p-2 mb-2 w-full"
+      />
+      <button onClick={fetchRecommendation} className="bg-blue-600 text-white p-2 rounded">
+        احصل على التوصية
+      </button>
+
+      {result && (
+        <div className="mt-4 bg-gray-100 p-4 rounded shadow">
+          <h3 className="text-lg font-bold">{result.symbol}</h3>
+          <p>📈 السعر الحالي: {result.price.regularMarketPrice.raw}</p>
+          <p>⬆️ أعلى: {result.price.regularMarketDayHigh.raw}</p>
+          <p>⬇️ أدنى: {result.price.regularMarketDayLow.raw}</p>
+          <p>🔊 الحجم: {result.price.regularMarketVolume.raw}</p>
+          <hr className="my-2" />
+          <p>💡 التوصية:</p>
+          <pre className="text-green-700 whitespace-pre-wrap">{result.recommendation}</pre>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
