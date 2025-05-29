@@ -1,43 +1,32 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const RecommendationBox = () => {
+function RecommendationBox() {
   const [symbol, setSymbol] = useState('');
-  const [recommendation, setRecommendation] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState('');
+  const [error, setError] = useState('');
 
-  const fetchRecommendation = async () => {
-    setLoading(true);
+  const handleRecommend = async () => {
     try {
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/recommend`, {
-        symbol: symbol.toUpperCase(),
+        symbol: symbol.toUpperCase()
       });
-
-      setRecommendation(JSON.stringify(response.data, null, 2));
-    } catch (error) {
-      console.error(error);
-      setRecommendation('⚠️ حدث خطأ أثناء الاتصال بالخادم');
+      setResult(response.data.recommendation);
+      setError('');
+    } catch (err) {
+      setError('⚠️ خطأ في الاتصال بالخادم');
+      setResult('');
     }
-    setLoading(false);
   };
 
   return (
-    <div className="p-4">
-      <input
-        type="text"
-        value={symbol}
-        onChange={(e) => setSymbol(e.target.value)}
-        placeholder="أدخل رمز السهم مثل AAPL"
-        className="border p-2"
-      />
-      <button onClick={fetchRecommendation} className="ml-2 bg-blue-500 text-white px-4 py-2 rounded">
-        🔍 تحليل
-      </button>
-      <div className="mt-4 whitespace-pre-wrap bg-gray-100 p-4 rounded">
-        {loading ? '⏳ جاري التحميل...' : recommendation}
-      </div>
+    <div>
+      <input value={symbol} onChange={e => setSymbol(e.target.value)} placeholder="ادخل رمز السهم مثل AAPL" />
+      <button onClick={handleRecommend}>احصل على التوصية</button>
+      <div>{result && <p>{result}</p>}</div>
+      <div>{error && <p style={{ color: 'red' }}>{error}</p>}</div>
     </div>
   );
-};
+}
 
 export default RecommendationBox;
