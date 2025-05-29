@@ -1,6 +1,16 @@
 // في RecommendPage.jsx
 import { useState } from 'react';
 import axios from 'axios';
+const express = require('express');
+const app = express();
+require('dotenv').config();
+
+const recommendRoute = require('./routes/recommend'); // أنشئ هذا الملف
+
+app.use('/recommend', recommendRoute);
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 export default function RecommendPage() {
   const [symbol, setSymbol] = useState('AAPL');
