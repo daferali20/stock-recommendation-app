@@ -1,54 +1,64 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import { Configuration, OpenAIApi } from "openai";
+const express = require('express');
+const router = express.Router();
+const axios = require('axios');
+const { Configuration, OpenAIApi } = require('openai');
 
-dotenv.config();
-
-const app = express();
-app.use(cors({
-  origin: "https://stock-recommendation-app.vercel.app"
-}));
-app.use(express.json());
-
+// إعداد GPT
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
 const openai = new OpenAIApi(configuration);
 
-app.get("/", (req, res) => {
-  res.send("Server is running");
-});
+// دالة لجلب بيانات السهم من RapidAPI
+async function fetchStockData(symbol) {
+  const url = `https://yh-finance.p.rapidapi.com/stock/v2/get-summary?symbol=${symbol}&region=US`;
 
-app.post('/recommend', async (req, res) => {
+  const headers = {
+    'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
+    'X-RapidAPI-Host': 'yh-finance.p.rapidapi.com',
+  };
+
+  const response = await axios.get(url, { headers });
+  return response.data;
+}
+
+// توصية GPT
+async function generateRecommendation(stockData, symbol) {
+  const price = stockData.price;
+
+  const prompt = `
+أعطني توصية فنية لحظية للسهم ${symbol} بناءً على:
+السعر الحالي: ${price?.regularMarketPrice?.raw}
+أعلى سعر اليوم: ${price?.regularMarketDayHigh?.raw}
+أدنى سعر اليوم: ${price?.regularMarketDayLow?.raw}
+الحجم الحالي: ${price?.regularMarketVolume?.raw}
+  `;
+
+  const response = await openai.createChatCompletion({
+    model: 'gpt-4',
+    messages: [{ role: 'user', content: prompt }],
+  });
+
+  return response.data.choices[0].message.content;
+}
+
+// المسار الرئيسي
+router.get('/:symbol', async (req, res) => {
+  const symbol = req.params.symbol;
+
   try {
-    const { stockSymbol } = req.body;
+    const stockData = await fetchStockData(symbol);
+    const recommendation = await generateRecommendation(stockData, symbol);
 
-    if (!stockSymbol) {
-      return res.status(400).json({ error: "Please provide stockSymbol in request body" });
-    }
-
-    // مثال على prompt ترسل للنموذج لتوليد توصية
-    const prompt = `Please provide a short recommendation about the stock: ${stockSymbol}. Include buy/sell/hold advice and a brief explanation.`;
-
-    const completion = await openai.createChatCompletion({
-      model: "gpt-4o-mini", // أو "gpt-4" حسب ما هو متاح لديك
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 150,
-      temperature: 0.7,
+    res.json({
+      symbol,
+      price: stockData.price,
+      recommendation,
     });
-
-    const recommendation = completion.data.choices[0].message.content;
-
-    res.json({ recommendation });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal server error" });
+  } catch (err) {
+    console.error('خطأ في التوصية:', err.message);
+    res.status(500).json({ error: 'فشل التحليل اللحظي للسهم.' });
   }
 });
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+module.exports = router;
