@@ -11,12 +11,6 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// نقطة اختبار بسيطة
-app.get('/', (req, res) => {
-  res.send('Backend is running!');
-});
-
-// نقطة التوصية اللحظية
 app.post('/recommend', async (req, res) => {
   const { symbol } = req.body;
 
@@ -30,19 +24,14 @@ app.post('/recommend', async (req, res) => {
     });
 
     const data = response.data;
-    res.json({
-      recommendation: `📊 توصية لحظية لسهم ${symbol}`,
-      analysis: '🔍 تحليل بسيط بناءً على البيانات المسترجعة.',
-      data
-    });
+    res.json({ recommendation: `📊 توصية لحظية لسهم ${symbol}`, analysis: "🔍 تحليل آلي", data });
 
   } catch (error) {
     console.error('Error fetching stock data:', error.message);
-    res.status(500).json({ error: 'Failed to fetch stock data from RapidAPI' });
+    res.status(500).json({ error: 'Network Error - Failed to fetch stock data' });
   }
 });
 
-// تشغيل الخادم
 app.listen(port, () => {
   console.log(`✅ Server is running on port ${port}`);
 });
