@@ -427,3 +427,49 @@
     }
   ]
 }
+{
+  "recommendations": [
+    {
+      "symbol": "AAPL",
+      "company": "Apple Inc.",
+      "current_price": 185.50,
+      "buy_price": 183.00,
+      "target_price": 195.00,
+      "stop_loss": 178.50,
+      "sector": "Technology",
+      "recommendation_date": "2023-11-15",
+      "analysis": "Strong Q4 earnings and new product pipeline",
+      "risk_level": "Medium"
+    },
+    {
+      "symbol": "TSLA",
+      "company": "Tesla Inc.",
+      "current_price": 235.75,
+      "buy_price": 232.00,
+      "target_price": 260.00,
+      "stop_loss": 225.00,
+      "sector": "Automotive",
+      "recommendation_date": "2023-11-15",
+      "analysis": "Cybertruck launch potential and global expansion",
+      "risk_level": "High"
+    },
+    {
+      "symbol": "MSFT",
+      "company": "Microsoft Corporation",
+      "current_price": 370.20,
+      "buy_price": 368.00,
+      "target_price": 400.00,
+      "stop_loss": 360.00,
+      "sector": "Technology",
+      "recommendation_date": "2023-11-14",
+      "analysis": "Cloud growth and AI integration across products",
+      "risk_level": "Low"
+    }
+  ],
+  "market_conditions": {
+    "as_of": "2023-11-15",
+    "market_sentiment": "Bullish",
+    "interest_rate_environment": "Stable"
+  },
+  "disclaimer": "This is simulated data for development purposes only. Not financial advice."
+}
