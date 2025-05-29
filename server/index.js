@@ -2,33 +2,25 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import axios from 'axios';
-const app = express();
-app.use(cors()); // السماح بالوصول من أي مصدر، مؤقتًا للتجربة
-app.use(express.json());
+
 dotenv.config();
-// تعريف الراوت /recommend
-app.post('/recommend', async (req, res) => {
-  // معالجتك هنا
-});
-app.listen(5000, () => {
-  console.log('Server listening on port 5000');
-});
+
 const app = express();
 const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
+// نقطة اختبار بسيطة
 app.get('/', (req, res) => {
   res.send('Backend is running!');
 });
 
-// نقطة الربط للتوصيات
+// نقطة التوصية اللحظية
 app.post('/recommend', async (req, res) => {
   const { symbol } = req.body;
 
   try {
-    // مثال لاستخدام RapidAPI
     const response = await axios.get('https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v2/get-summary', {
       params: { symbol, region: 'US' },
       headers: {
@@ -38,14 +30,19 @@ app.post('/recommend', async (req, res) => {
     });
 
     const data = response.data;
-    res.json({ recommendation: `تفاصيل السهم ${symbol}`, data });
+    res.json({
+      recommendation: `📊 توصية لحظية لسهم ${symbol}`,
+      analysis: '🔍 تحليل بسيط بناءً على البيانات المسترجعة.',
+      data
+    });
 
   } catch (error) {
     console.error('Error fetching stock data:', error.message);
-    res.status(500).json({ error: 'Failed to fetch stock data' });
+    res.status(500).json({ error: 'Failed to fetch stock data from RapidAPI' });
   }
 });
 
+// تشغيل الخادم
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`✅ Server is running on port ${port}`);
 });
