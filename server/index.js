@@ -7,18 +7,23 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ✅ إعداد CORS للسماح للواجهة بالاتصال بالخادم
+// إعداد CORS للسماح للواجهة بالاتصال بالخادم
 app.use(cors({
-  origin: 'https://stock-recommendation-app.vercel.app/', // ضع رابط الواجهة هنا
+  origin: 'https://stock-recommendation-app.vercel.app', // بدون "/"
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type'],
 }));
 
 app.use(express.json());
 
+// ✅ مسار ترحيبي ل GET /
+app.get('/', (req, res) => {
+  res.send('✅ Stock Recommendation Server is running.');
+});
+
 // نقطة النهاية لتوليد التوصيات
 app.post('/recommend', async (req, res) => {
-  // هنا كود الاتصال بـ OpenAI API ...
+  // كود الاتصال بـ OpenAI API هنا...
 });
 
 app.listen(PORT, () => {
