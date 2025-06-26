@@ -1,7 +1,6 @@
 import streamlit as st
 import requests
 import pandas as pd
-import time
 from datetime import datetime
 
 # إعدادات API
@@ -11,6 +10,7 @@ BASE_URL = "https://financialmodelingprep.com/api/v3"
 # إعدادات Telegram Bot
 TELEGRAM_BOT_TOKEN = "6203893805:AAFX_hXijc-HVcuNV8mAJqbVMRhi95A-dZs"
 TELEGRAM_CHAT_ID = "@D_Option"
+STOCKS_PER_MESSAGE = 20  # عدد الأسهم في كل رسالة
 
 def get_stock_screener(params):
     url = f"{BASE_URL}/stock-screener?apikey={API_KEY}"
@@ -18,99 +18,105 @@ def get_stock_screener(params):
         if value is not None:
             url += f"&{key}={value}"
     try:
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, timeout=15)
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
         st.error(f"خطأ في الاتصال بAPI: {str(e)}")
         return None
 
-def send_to_telegram(message):
-    try:
-        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-        payload = {
-            "chat_id": TELEGRAM_CHAT_ID,
-            "text": message,
-            "parse_mode": "HTML",
-            "disable_web_page_preview": True
-        }
-        
-        response = requests.post(url, json=payload, timeout=10)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        st.error(f"خطأ في إرسال الرسالة: {str(e)}")
-        return {"ok": False, "description": str(e)}
+def send_telegram_batch(messages):
+    results = []
+    for message in messages:
+        try:
+            url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+            payload = {
+                "chat_id": TELEGRAM_CHAT_ID,
+                "text": message,
+                "parse_mode": "HTML",
+                "disable_web_page_preview": True
+            }
+            response = requests.post(url, json=payload, timeout=15)
+            response.raise_for_status()
+            results.append(response.json())
+            time.sleep(1)  # تجنب rate limits
+        except requests.exceptions.RequestException as e:
+            results.append({"ok": False, "description": str(e)})
+    return results
 
-def prepare_telegram_message(df, params, custom_message):
-    # تحضير الرسالة الأساسية
-    message = f"<b>📊 {custom_message}</b>\n"
-    message += f"⏳ {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n"
+def prepare_telegram_messages(df, params, custom_message):
+    messages = []
     
-    # معايير البحث
-    message += "<b>🔍 معايير البحث:</b>\n"
-    message += f"- العائد على التوزيعات: {params['dividendYieldMoreThan']}%\n"
-    message += f"- نمو الإيرادات: {params['revenueGrowthMoreThan']}%\n"
-    message += f"- نمو ربحية السهم: {params['epsGrowthMoreThan']}%\n"
-    message += f"- عدد الأسهم: {len(df)}\n\n"
+    # الرسالة الرئيسية
+    header = f"<b>📊 {custom_message}</b>\n"
+    header += f"⏳ {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n"
+    header += "<b>🔍 معايير البحث:</b>\n"
+    header += f"- العائد: {params['dividendYieldMoreThan']}%\n"
+    header += f"- نمو الإيرادات: {params['revenueGrowthMoreThan']}%\n"
+    header += f"- عدد الأسهم: {len(df)}\n\n"
+    header += "<b>📈 النتائج:</b>\n\n"
+    messages.append(header)
     
-    # أهم 3 أسهم
-    message += "<b>🏆 أفضل الأسهم:</b>\n"
-    top_stocks = df.head(3).copy()
+    # تقسيم الأسهم إلى مجموعات
+    stocks_chunks = [df[i:i+STOCKS_PER_MESSAGE] for i in range(0, len(df), STOCKS_PER_MESSAGE)]
     
-    for _, row in top_stocks.iterrows():
-        message += f"\n<b>📌 {row.get('symbol', 'N/A')}</b>\n"
-        message += f"🏢 {row.get('companyName', '')[:30]}...\n"
+    for chunk in stocks_chunks:
+        message = ""
+        for _, row in chunk.iterrows():
+            stock_info = f"<b>📌 {row.get('symbol', 'N/A')}</b>\n"
+            stock_info += f"🏢 {row.get('companyName', '')[:25]}...\n"
+            
+            if 'price' in row:
+                stock_info += f"💰 السعر: ${row['price']:.2f}\n"
+            if 'dividendYield' in row:
+                stock_info += f"📈 العائد: {row['dividendYield']:.2f}%\n"
+            if 'revenueGrowth' in row:
+                stock_info += f"📊 النمو: {row['revenueGrowth']:.2f}%\n"
+            
+            stock_info += "――――――――――\n"
+            message += stock_info
         
-        if 'price' in row:
-            message += f"💰 السعر: ${row['price']:.2f}\n"
-        if 'dividendYield' in row:
-            message += f"📈 العائد: {row['dividendYield']:.2f}%\n"
-        if 'revenueGrowth' in row:
-            message += f"📊 نمو الإيرادات: {row['revenueGrowth']:.2f}%\n"
+        messages.append(message)
     
-    # إحصائيات
-    message += "\n<b>📈 ملخص النتائج:</b>\n"
+    # الرسالة الختامية
+    footer = "\n<b>📊 ملخص إحصائي:</b>\n"
     if 'dividendYield' in df.columns:
-        avg_yield = df['dividendYield'].mean()
-        message += f"• متوسط العائد: {avg_yield:.2f}%\n"
+        footer += f"• متوسط العائد: {df['dividendYield'].mean():.2f}%\n"
     if 'price' in df.columns:
-        avg_price = df['price'].mean()
-        message += f"• متوسط السعر: ${avg_price:.2f}\n"
-    if 'revenueGrowth' in df.columns:
-        avg_revenue = df['revenueGrowth'].mean()
-        message += f"• متوسط نمو الإيرادات: {avg_revenue:.2f}%\n"
+        footer += f"• متوسط السعر: ${df['price'].mean():.2f}\n"
+    footer += "\n⚡ تم إنشاء التقرير بواسطة Stock Screener Bot"
+    messages.append(footer)
     
-    message += "\n⚡ تم إنشاء التقرير بواسطة Stock Screener Bot"
-    return message
+    return messages
 
 # واجهة المستخدم
-st.set_page_config(page_title="مصفاة الأسهم الذكية", layout="wide")
-st.title('🤑 مصفاة الأسهم الذكية (العائد + النمو)')
+st.set_page_config(page_title="مصفاة الأسهم", layout="wide")
+st.title('📈 مصفاة الأسهم (عائد + نمو)')
 st.markdown("""
-هذا التطبيق يساعدك في العثور على الأسهم التي تجمع بين **العائد الجيد** و**النمو المستدام**.
+**أداة متقدمة** لاكتشاف الأسهم ذات العوائد المجزية ونمو الأرباح المستدام
 """)
 
-# إعدادات البحث في الشريط الجانبي
+# إعدادات البحث
 with st.sidebar:
-    st.header("⚙️ معايير التصفية")
+    st.header("⚙️ ضبط المعايير")
     
-    st.subheader("معايير العائد (Dividend)")
-    dividend_yield = st.slider("العائد على التوزيعات (%)", 0.0, 20.0, 3.0, 0.5)
-    dividend_growth = st.slider("نمو التوزيعات (سنوات)", 0, 20, 5)
+    with st.expander("معايير العوائد"):
+        dividend_yield = st.slider("حد أدنى للعائد (%)", 0.0, 20.0, 3.0, 0.5)
+        dividend_growth = st.slider("حد أدنى لسنوات التوزيع", 0, 20, 5)
     
-    st.subheader("معايير النمو")
-    revenue_growth = st.slider("نمو الإيرادات السنوي (%)", 0, 100, 10)
-    eps_growth = st.slider("نمو ربحية السهم (EPS) (%)", -50, 100, 0)
+    with st.expander("معايير النمو"):
+        revenue_growth = st.slider("نمو إيرادات سنوي (%)", 0, 100, 10)
+        eps_growth = st.slider("نمو ربحية السهم (%)", -50, 100, 0)
     
-    st.subheader("معايير إضافية")
-    market_cap = st.selectbox("حجم الشركة", ["الكبيرة فقط", "المتوسطة", "الصغيرة", "الكل"], index=0)
-    exchange = st.multiselect("البورصة", ["NASDAQ", "NYSE", "AMEX"], default=["NASDAQ", "NYSE"])
+    with st.expander("خيارات متقدمة"):
+        market_cap = st.selectbox("حجم الشركة", ["الكبيرة فقط", "المتوسطة", "الصغيرة", "الكل"], index=0)
+        exchange = st.multiselect("البورصات", ["NASDAQ", "NYSE", "AMEX"], default=["NASDAQ", "NYSE"])
     
-    st.subheader("إعدادات Telegram")
-    telegram_enabled = st.checkbox("تمكين الإرسال إلى Telegram", value=True)
-    if telegram_enabled:
-        telegram_message = st.text_area("رسالة مخصصة", value="تقرير الأسهم المفلترة")
+    with st.expander("إعدادات الإرسال"):
+        telegram_enabled = st.checkbox("تمكين إرسال Telegram", value=True)
+        if telegram_enabled:
+            st.info(f"سيتم إرسال {STOCKS_PER_MESSAGE} سهماً في كل رسالة")
+            telegram_message = st.text_input("عنوان التقرير", value="تقرير الأسهم المميزة")
 
 params = {
     "dividendYieldMoreThan": dividend_yield,
@@ -121,93 +127,71 @@ params = {
     "exchange": ",".join(exchange) if exchange else None
 }
 
-if st.button("🔍 بحث عن الأسهم"):
-    with st.spinner("جاري البحث عن أفضل الأسهم..."):
+if st.button("🔍 بدء البحث", type="primary"):
+    with st.spinner("جاري تحليل بيانات السوق..."):
         data = get_stock_screener(params)
         
         if data is None:
-            st.error("حدث خطأ في جلب البيانات. يرجى المحاولة لاحقًا.")
+            st.error("تعذر الاتصال بمصدر البيانات")
         elif not data:
-            st.warning("لم يتم العثور على أسهم تطابق معاييرك. حاول تخفيف المعايير.")
+            st.warning("لا توجد نتائج مطابقة للمعايير")
         else:
             df = pd.DataFrame(data)
-            
-            # تحديد الأعمدة المتاحة
-            available_columns = df.columns.tolist()
-            columns_mapping = {
-                'symbol': 'الرمز',
-                'companyName': 'اسم الشركة',
-                'dividendYield': 'العائد (%)',
-                'payoutRatio': 'نسبة التوزيع',
-                'revenueGrowth': 'نمو الإيرادات',
-                'epsGrowth': 'نمو ربحية السهم',
-                'price': 'السعر',
-                'marketCap': 'القيمة السوقية'
-            }
-            
-            # تصفية الأعمدة المتاحة فقط
-            columns_to_show = [col for col in columns_mapping if col in available_columns]
-            display_columns = [columns_mapping[col] for col in columns_to_show]
-            
-            # تنسيق البيانات
-            if 'marketCap' in df.columns:
-                df['marketCap'] = df['marketCap'].apply(lambda x: f"${x/1e9:.2f}B" if x >= 1e9 else f"${x/1e6:.2f}M")
+            st.success(f"تم تحديد {len(df)} سهماً مؤهلاً")
             
             # عرض النتائج
-            st.success(f"تم العثور على {len(df)} سهمًا تطابق معاييرك")
+            cols_to_show = ['symbol', 'companyName', 'price', 'dividendYield', 'revenueGrowth']
+            cols_to_show = [col for col in cols_to_show if col in df.columns]
             
-            if columns_to_show:
-                # إنشاء DataFrame للعرض
-                display_df = df[columns_to_show].rename(columns=dict(zip(columns_to_show, display_columns)))
+            if cols_to_show:
+                display_df = df[cols_to_show].rename(columns={
+                    'symbol': 'الرمز',
+                    'companyName': 'الشركة',
+                    'price': 'السعر',
+                    'dividendYield': 'العائد%',
+                    'revenueGrowth': 'نمو الإيرادات%'
+                })
                 
-                # تنسيق الأرقام
-                format_dict = {
-                    'العائد (%)': '{:.2f}%',
-                    'نسبة التوزيع': '{:.2f}%',
-                    'نمو الإيرادات': '{:.2f}%',
-                    'نمو ربحية السهم': '{:.2f}%',
-                    'السعر': '${:.2f}'
-                }
+                st.dataframe(
+                    display_df.style.format({
+                        'السعر': '${:.2f}',
+                        'العائد%': '{:.2f}%',
+                        'نمو الإيرادات%': '{:.2f}%'
+                    }),
+                    height=600,
+                    use_container_width=True
+                )
                 
-                # تطبيق التنسيق على الأعمدة المتاحة فقط
-                format_dict = {k: v for k, v in format_dict.items() if k in display_df.columns}
-                styled_df = display_df.style.format(format_dict)
-                
-                st.dataframe(styled_df, height=600, use_container_width=True)
-                
-                # أزرار التصدير
+                # خيارات التصدير
                 col1, col2 = st.columns(2)
                 with col1:
-                    csv = df[columns_to_show].to_csv(index=False).encode('utf-8')
+                    csv = df.to_csv(index=False).encode('utf-8')
                     st.download_button(
-                        label="📥 تنزيل النتائج كملف CSV",
+                        label="💾 حفظ كملف CSV",
                         data=csv,
                         file_name=f"stocks_{datetime.now().strftime('%Y%m%d')}.csv",
                         mime='text/csv'
                     )
                 
                 with col2:
-                    if telegram_enabled:
-                        if st.button("📤 إرسال إلى Telegram"):
-                            with st.spinner("جاري إعداد وإرسال التقرير..."):
-                                try:
-                                    message = prepare_telegram_message(df, params, telegram_message)
-                                    result = send_to_telegram(message)
-                                    
-                                    if result.get('ok'):
-                                        st.success("✅ تم إرسال التقرير إلى Telegram بنجاح!")
-                                        st.balloons()
-                                    else:
-                                        error_msg = result.get('description', 'خطأ غير معروف')
-                                        st.error(f"❌ فشل الإرسال: {error_msg}")
-                                except Exception as e:
-                                    st.error(f"حدث خطأ غير متوقع: {str(e)}")
+                    if telegram_enabled and st.button("📤 إرسال إلى Telegram", type="secondary"):
+                        with st.spinner(f"جاري إعداد {len(df)} سهماً في مجموعات..."):
+                            try:
+                                messages = prepare_telegram_messages(df, params, telegram_message)
+                                results = send_telegram_batch(messages)
+                                
+                                success_count = sum(1 for r in results if r.get('ok'))
+                                if success_count == len(messages):
+                                    st.success(f"تم إرسال {len(messages)} رسالة بنجاح!")
+                                    st.balloons()
+                                else:
+                                    failed = len(messages) - success_count
+                                    st.warning(f"تم إرسال {success_count} رسالة، وفشل {failed}")
+                            except Exception as e:
+                                st.error(f"خطأ غير متوقع: {str(e)}")
             else:
-                st.warning("البيانات المسترجعة لا تحتوي على الأعمدة المطلوبة")
+                st.warning("بيانات غير كافية للعرض")
 
 # تذييل الصفحة
 st.markdown("---")
-st.markdown("""
-**مصدر البيانات:** [Financial Modeling Prep](https://financialmodelingprep.com/)  
-**آخر تحديث:** {date}
-""".format(date=datetime.now().strftime('%Y-%m-%d %H:%M')))
+st.caption(f"آخر تحديث: {datetime.now().strftime('%Y-%m-%d %H:%M')} | مصدر البيانات: Financial Modeling Prep")
