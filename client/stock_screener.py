@@ -78,7 +78,6 @@ def prepare_telegram_messages(df, params, custom_message):
     telegram = TelegramSender()
     messages = []
     
-    # الرسالة الرئيسية
     header = f"<b>📊 {custom_message}</b>\n"
     header += f"⏳ {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n"
     header += "<b>🔍 معايير البحث:</b>\n"
@@ -87,7 +86,6 @@ def prepare_telegram_messages(df, params, custom_message):
     header += f"- عدد الأسهم: {len(df)}\n\n"
     messages.append(header)
     
-    # تقسيم الأسهم إلى مجموعات
     for i in range(0, len(df), STOCKS_PER_MESSAGE):
         chunk = df.iloc[i:i+STOCKS_PER_MESSAGE]
         message = f"<b>📌 مجموعة الأسهم {i//STOCKS_PER_MESSAGE + 1}</b>\n\n"
@@ -95,19 +93,16 @@ def prepare_telegram_messages(df, params, custom_message):
         for _, row in chunk.iterrows():
             stock_info = f"<code>{row.get('symbol', 'N/A')}</code> | "
             stock_info += f"{row.get('companyName', '')[:20]}...\n"
-            
             if 'price' in row:
                 stock_info += f"💰 ${row['price']:.2f} | "
             if 'dividendYield' in row:
                 stock_info += f"📈 {row['dividendYield']:.2f}% | "
             if 'revenueGrowth' in row:
                 stock_info += f"📊 {row['revenueGrowth']:.2f}%\n"
-            
             message += stock_info + "――――――――――\n"
         
         messages.append(message)
     
-    # الرسالة الختامية
     footer = "\n<b>📊 ملخص إحصائي:</b>\n"
     if 'dividendYield' in df.columns:
         footer += f"• متوسط العائد: {df['dividendYield'].mean():.2f}%\n"
@@ -120,14 +115,31 @@ def prepare_telegram_messages(df, params, custom_message):
 
 # واجهة Streamlit
 st.set_page_config(page_title="مصفاة الأسهم", layout="wide")
-st.title('📈 مصفاة الأسهم (عائد + نمو)')
+st.title("📈 مصفاة الأسهم (عائد + نمو)")
 
-# ... (بقية كود واجهة المستخدم كما هو)
+st.markdown("حدد معاييرك لفلترة الأسهم:")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    dividend = st.slider("🔹 الحد الأدنى للعائد (%)", 0.0, 10.0, 3.0, 0.1)
+
+with col2:
+    revenue_growth = st.slider("🔹 الحد الأدنى لنمو الإيرادات (%)", 0.0, 50.0, 10.0, 0.5)
+
+telegram_enabled = st.checkbox("📩 تفعيل الإرسال إلى تيليجرام", value=True)
+telegram_message = st.text_input("💬 رسالة مخصصة لتيليجرام", "الأسهم ذات عائد مرتفع ونمو جيد")
+
+params = {
+    "dividendYieldMoreThan": dividend,
+    "revenueGrowthMoreThan": revenue_growth,
+    "limit": 100,
+    "exchange": "NASDAQ"
+}
 
 if st.button("🔍 بدء البحث", type="primary"):
     with st.spinner("جاري تحليل بيانات السوق..."):
         data = get_stock_screener(params)
-        
         if data is None:
             st.error("تعذر الاتصال بمصدر البيانات")
         elif not data:
@@ -135,23 +147,21 @@ if st.button("🔍 بدء البحث", type="primary"):
         else:
             df = pd.DataFrame(data)
             st.success(f"تم تحديد {len(df)} سهماً مؤهلاً")
-            
-            # ... (عرض النتائج كما هو)
-                
-                with col2:
-                    if telegram_enabled and st.button("📤 إرسال إلى Telegram", type="secondary"):
-                        with st.spinner(f"جاري إعداد {len(df)} سهماً في مجموعات..."):
-                            try:
-                                telegram = TelegramSender()
-                                messages = prepare_telegram_messages(df, params, telegram_message)
-                                results = telegram.send_batch(messages)
-                                
-                                success_count = sum(1 for r in results if r.get('ok'))
-                                if success_count == len(messages):
-                                    st.success(f"تم إرسال {len(messages)} رسالة بنجاح!")
-                                    st.balloons()
-                                else:
-                                    failed = len(messages) - success_count
-                                    st.warning(f"تم إرسال {success_count} رسالة، وفشل {failed}")
-                            except Exception as e:
-                                st.error(f"خطأ غير متوقع: {str(e)}")
+            st.dataframe(df)
+
+            if telegram_enabled:
+                if st.button("📤 إرسال النتائج إلى Telegram"):
+                    with st.spinner("جاري إرسال البيانات..."):
+                        try:
+                            telegram = TelegramSender()
+                            messages = prepare_telegram_messages(df, params, telegram_message)
+                            results = telegram.send_batch(messages)
+
+                            success_count = sum(1 for r in results if r.get("ok"))
+                            if success_count == len(messages):
+                                st.success(f"✅ تم إرسال {len(messages)} رسالة بنجاح!")
+                                st.balloons()
+                            else:
+                                st.warning(f"⚠️ تم إرسال {success_count} من {len(messages)} رسالة فقط.")
+                        except Exception as e:
+                            st.error(f"❌ خطأ: {str(e)}")
