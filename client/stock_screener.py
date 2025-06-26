@@ -89,8 +89,7 @@ def prepare_telegram_messages(df, params, custom_message):
     header += f"- عدد الأسهم: {len(df)}\n\n"
 
     current_message = header
-
-    for _, row in df.iterrows():
+for _, row in df.iterrows():
         try:
             symbol = html.escape(str(row.get("symbol", "N/A")))
             company = html.escape(str(row.get("companyName", "")))[:25]
@@ -114,7 +113,7 @@ def prepare_telegram_messages(df, params, custom_message):
         current_message += stock_info
     except Exception as e:
         st.warning(f"⚠️ مشكلة في سطر: {e}")
-        continue
+        continue   
 
 
     # الرسالة الأخيرة
