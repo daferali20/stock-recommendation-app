@@ -4,7 +4,7 @@ import pandas as pd
 import html
 from datetime import datetime
 
-from telegram_alerts import TelegramSender  # استيراد كلاس التليجرام
+from telegram_alerts import TelegramSender  # استدعاء الملف الخارجي
 
 # إعدادات API
 API_KEY = "CVROqS2TTsTM06ZNpYQJd5C1dXg1Amuv"
@@ -30,50 +30,41 @@ def get_stock_screener(params):
         return None
 
 def prepare_telegram_messages(df, params, custom_message):
-    MAX_LENGTH = 4000
+    MAX_LENGTH = 3500
     messages = []
 
-    # نأخذ أول 5 أسهم فقط
+    # فقط أول 5 أسهم
     df = df.head(5)
 
-    # رأس الرسالة
-    header = f"<b>📊 {html.escape(custom_message)}</b>\n"
-    header += f"⏳ {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n"
-    header += "<b>🔍 معايير البحث:</b>\n"
-    header += f"- العائد: {params['dividendYieldMoreThan']}%\n"
-    header += f"- نمو الإيرادات: {params['revenueGrowthMoreThan']}%\n"
-    header += f"- عدد الأسهم المرسلة: {len(df)}\n\n"
+    header = f"📊 {custom_message}\n"
+    header += f"⏳ {datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
+    header += f"🔍 الشروط: عائد > {params['dividendYieldMoreThan']}%، نمو > {params['revenueGrowthMoreThan']}%\n\n"
 
     current_message = header
-
     for _, row in df.iterrows():
         try:
-            symbol = html.escape(str(row.get("symbol", "N/A")))
-            dividend = f"{row['dividendYield']:.2f}%" if "dividendYield" in row else "0.00%"
-            growth = f"{row['revenueGrowth']:.2f}%" if "revenueGrowth" in row else "0.00%"
+            symbol = str(row.get("symbol", "N/A"))
+            dividend = f"{row.get('dividendYield', 0):.2f}%"
+            growth = f"{row.get('revenueGrowth', 0):.2f}%"
 
-            # عرض مختصر: رمز السهم + العائد + نمو الإيرادات
-            stock_info = f"<code>{symbol}</code> | عائد: {dividend} | نمو: {growth}\n"
-            stock_info += "――――――――――\n"
+            stock_info = f"{symbol} | عائد: {dividend} | نمو: {growth}\n"
 
-            if len(current_message) + len(stock_info) >= MAX_LENGTH:
-                messages.append(current_message.strip())
+            if len(current_message) + len(stock_info) > MAX_LENGTH:
+                messages.append(current_message)
                 current_message = ""
 
             current_message += stock_info
         except Exception as e:
-            st.warning(f"⚠️ مشكلة في سطر: {e}")
             continue
 
-    # الرسالة الأخيرة
     if current_message.strip():
         messages.append(current_message.strip())
 
-    # رسالة ختامية بسيطة
-    footer = "\n⚡ تم الإنشاء بواسطة Stock Screener"
-    messages.append(footer[:MAX_LENGTH])
+    footer = "\n⚡ تم الإنشاء تلقائيًا"
+    messages.append(footer)
 
     return messages
+
 
 
 # واجهة Streamlit
