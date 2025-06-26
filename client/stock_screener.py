@@ -75,42 +75,55 @@ def get_stock_screener(params):
         return None
 
 def prepare_telegram_messages(df, params, custom_message):
+    MAX_LENGTH = 4000
     messages = []
 
+    # الرسالة الافتتاحية
     header = f"<b>📊 {custom_message}</b>\n"
     header += f"⏳ {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n"
     header += "<b>🔍 معايير البحث:</b>\n"
     header += f"- العائد: {params['dividendYieldMoreThan']}%\n"
     header += f"- نمو الإيرادات: {params['revenueGrowthMoreThan']}%\n"
     header += f"- عدد الأسهم: {len(df)}\n\n"
-    messages.append(header)
 
-    for i in range(0, len(df), STOCKS_PER_MESSAGE):
-        chunk = df.iloc[i:i+STOCKS_PER_MESSAGE]
-        message = f"<b>📌 مجموعة الأسهم {i//STOCKS_PER_MESSAGE + 1}</b>\n\n"
+    # الرسائل تبدأ بالهيدر
+    current_message = header
 
-        for _, row in chunk.iterrows():
-            stock_info = f"<code>{row.get('symbol', 'N/A')}</code> | "
-            stock_info += f"{row.get('companyName', '')[:20]}...\n"
-            if 'price' in row:
-                stock_info += f"💰 ${row['price']:.2f} | "
-            if 'dividendYield' in row:
-                stock_info += f"📈 {row['dividendYield']:.2f}% | "
-            if 'revenueGrowth' in row:
-                stock_info += f"📊 {row['revenueGrowth']:.2f}%\n"
-            message += stock_info + "――――――――――\n"
+    for i, row in df.iterrows():
+        stock_info = f"<code>{row.get('symbol', 'N/A')}</code> | "
+        stock_info += f"{row.get('companyName', '')[:20]}...\n"
+        if 'price' in row:
+            stock_info += f"💰 ${row['price']:.2f} | "
+        if 'dividendYield' in row:
+            stock_info += f"📈 {row['dividendYield']:.2f}% | "
+        if 'revenueGrowth' in row:
+            stock_info += f"📊 {row['revenueGrowth']:.2f}%\n"
+        stock_info += "――――――――――\n"
 
-        messages.append(message)
+        # إذا تجاوز الطول المسموح، نحفظ الرسالة الحالية ونبدأ جديدة
+        if len(current_message) + len(stock_info) >= MAX_LENGTH:
+            messages.append(current_message)
+            current_message = ""  # بداية رسالة جديدة
 
+        current_message += stock_info
+
+    if current_message:
+        messages.append(current_message)
+
+    # الرسالة الختامية
     footer = "\n<b>📊 ملخص إحصائي:</b>\n"
     if 'dividendYield' in df.columns:
         footer += f"• متوسط العائد: {df['dividendYield'].mean():.2f}%\n"
     if 'price' in df.columns:
         footer += f"• متوسط السعر: ${df['price'].mean():.2f}\n"
     footer += "\n⚡ تم الإنشاء بواسطة Stock Screener"
-    messages.append(footer)
+    if len(footer) >= MAX_LENGTH:
+        messages.append(footer[:MAX_LENGTH])
+    else:
+        messages.append(footer)
 
     return messages
+
 
 # واجهة Streamlit
 st.set_page_config(page_title="مصفاة الأسهم", layout="wide")
