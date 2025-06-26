@@ -157,6 +157,11 @@ if st.button("🔍 بدء البحث", type="primary"):
                             messages = prepare_telegram_messages(df, params, telegram_message)
                             results = telegram.send_batch(messages)
 
+                            # ✅ عرض تفاصيل الأخطاء إن وجدت
+                            for i, result in enumerate(results):
+                                if not result.get("ok"):
+                                    st.error(f"❌ خطأ في الرسالة {i+1}: {result.get('error')} | التفاصيل: {result.get('details')}")
+
                             success_count = sum(1 for r in results if r.get("ok"))
                             if success_count == len(messages):
                                 st.success(f"✅ تم إرسال {len(messages)} رسالة بنجاح!")
