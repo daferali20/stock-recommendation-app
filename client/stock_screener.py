@@ -91,7 +91,7 @@ def prepare_telegram_messages(df, params, custom_message):
     current_message = header
 
     for _, row in df.iterrows():
-            try:
+        try:
             symbol = html.escape(str(row.get("symbol", "N/A")))
             company = html.escape(str(row.get("companyName", "")))[:25]
             price = f"${row['price']:.2f}" if "price" in row else ""
