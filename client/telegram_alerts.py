@@ -1,30 +1,28 @@
 import requests
 import time
 
+TELEGRAM_BOT_TOKEN = "6203893805:AAFX_hXijc-HVcuNV8mAJqbVMRhi95A-dZs"
+TELEGRAM_CHAT_ID = "@D_Option"
+TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+
 class TelegramSender:
-    def __init__(self, bot_token, chat_id, delay=1, timeout=15):
-        self.base_url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-        self.chat_id = chat_id
-        self.timeout = timeout
-        self.delay = delay
+    def __init__(self):
+        self.base_url = TELEGRAM_API_URL
+        self.timeout = 10
+        self.delay = 1
 
     def send_message(self, message):
         try:
             time.sleep(self.delay)
             payload = {
-                "chat_id": self.chat_id,
+                "chat_id": TELEGRAM_CHAT_ID,
                 "text": message,
-                "parse_mode": "HTML",
+                "parse_mode": "Markdown",  # أكثر أمانًا من HTML
                 "disable_web_page_preview": True
-            }
-            headers = {
-                "Content-Type": "application/json",
-                "User-Agent": "Mozilla/5.0"
             }
             response = requests.post(
                 self.base_url,
                 json=payload,
-                headers=headers,
                 timeout=self.timeout
             )
             if response.status_code == 200:
@@ -39,7 +37,7 @@ class TelegramSender:
             return {
                 "ok": False,
                 "error": str(e),
-                "details": "حدث خطأ غير متوقع"
+                "details": "Exception raised"
             }
 
     def send_batch(self, messages):
