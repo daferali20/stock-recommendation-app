@@ -91,27 +91,31 @@ def prepare_telegram_messages(df, params, custom_message):
     current_message = header
 
     for _, row in df.iterrows():
-        try:
-            symbol = html.escape(str(row.get("symbol", "N/A")))
-            company = html.escape(str(row.get("companyName", "")))[:25]
-            stock_info = f"<code>{symbol}</code> | {company}...\n"
-            if "price" in row:
-                stock_info += f"💰 ${row['price']:.2f} | "
-            if "dividendYield" in row:
-                stock_info += f"📈 {row['dividendYield']:.2f}% | "
-            if "revenueGrowth" in row:
-                stock_info += f"📊 {row['revenueGrowth']:.2f}%\n"
-            stock_info += "――――――――――\n"
+    try:
+        symbol = html.escape(str(row.get("symbol", "N/A")))
+        company = html.escape(str(row.get("companyName", "")))[:25]
+        price = f"${row['price']:.2f}" if "price" in row else ""
+        dividend = f"{row['dividendYield']:.2f}%" if "dividendYield" in row else ""
+        growth = f"{row['revenueGrowth']:.2f}%" if "revenueGrowth" in row else ""
 
-            # إذا تجاوزنا الحد نبدأ رسالة جديدة
-            if len(current_message) + len(stock_info) >= MAX_LENGTH:
-                messages.append(current_message.strip())
-                current_message = ""
+        stock_info = f"<code>{symbol}</code> | {company}...\n"
+        if price:
+            stock_info += f"💰 {price} | "
+        if dividend:
+            stock_info += f"📈 {dividend} | "
+        if growth:
+            stock_info += f"📊 {growth}\n"
+        stock_info += "――――――――――\n"
 
-            current_message += stock_info
-        except Exception as e:
-            # لتفادي أخطاء غير متوقعة في صفوف معينة
-            continue
+        if len(current_message) + len(stock_info) >= MAX_LENGTH:
+            messages.append(current_message.strip())
+            current_message = ""
+
+        current_message += stock_info
+    except Exception as e:
+        st.warning(f"⚠️ مشكلة في سطر: {e}")
+        continue
+
 
     # الرسالة الأخيرة
     if current_message.strip():
