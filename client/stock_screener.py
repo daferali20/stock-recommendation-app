@@ -11,10 +11,10 @@ API_KEY = "CVROqS2TTsTM06ZNpYQJd5C1dXg1Amuv"
 BASE_URL = "https://financialmodelingprep.com/api/v3"
 
 # إعدادات Telegram Bot
-TELEGRAM_BOT_TOKEN = "6203893805:AAFX_hXijc-HVcuNV8mAJqbVMRhi95A-dZs"
-TELEGRAM_CHAT_ID = "@D_Option"
+#TELEGRAM_BOT_TOKEN = "6203893805:AAFX_hXijc-HVcuNV8mAJqbVMRhi95A-dZs"
+#TELEGRAM_CHAT_ID = "@D_Option"
 
-STOCKS_PER_MESSAGE = 15
+#STOCKS_PER_MESSAGE = 15
 
 def get_stock_screener(params):
     url = f"{BASE_URL}/stock-screener?apikey={API_KEY}"
