@@ -7,7 +7,7 @@ from datetime import datetime
 from telegram_alerts import TelegramSender  # تأكد أن هذا الملف موجود ومهيأ
 
 # إعدادات API
-API_KEY = "CVROqS2TTsTM06ZNpYQJd5A1uv"
+API_KEY = "CVROqS2TTsTM06ZNpYQJd5C1dXg1Amuv"
 BASE_URL = "https://financialmodelingprep.com/api/v3"
 
 def get_stock_screener(params):
