@@ -110,10 +110,10 @@ for _, row in df.iterrows():
                 messages.append(current_message.strip())
                 current_message = ""
 
-        current_message += stock_info
-    except Exception as e:
-        st.warning(f"⚠️ مشكلة في سطر: {e}")
-        continue   
+            current_message += stock_info
+        except Exception as e:
+            st.warning(f"⚠️ مشكلة في سطر: {e}")
+            continue   
 
 
     # الرسالة الأخيرة
