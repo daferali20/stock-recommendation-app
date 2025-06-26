@@ -82,51 +82,29 @@ params = {
 
 
 # إنشاء كائن TelegramSender
+# تعريف كائن التليجرام مرة واحدة
 telegram = TelegramSender()
 
-# زر اختبار تيليجرام
-if st.button("📨 اختبار إرسال Telegram"):
-    test_result = telegram.send_message("✅ اختبار مباشر من تطبيق Streamlit")
-    st.write("📬 نتيجة الاختبار:", test_result)
-
-# زر البحث وتحليل الأسهم
-if st.button("🔍 بدء البحث", type="primary"):
-    with st.spinner("جاري تحليل بيانات السوق..."):
-        data = get_stock_screener(params)
-        if data is None:
-            st.error("❌ تعذر الاتصال بمصدر البيانات")
-        elif not data:
-            st.warning("⚠️ لا توجد نتائج مطابقة للمعايير")
+# زر إرسال أول رسالة فقط
+if messages and st.button("📤 إرسال أول رسالة فقط"):
+    with st.spinner("📤 جاري إرسال الرسالة الأولى..."):
+        result = telegram.send_message(messages[0])
+        if result.get("ok"):
+            st.success("✅ تم إرسال الرسالة بنجاح!")
         else:
-            df = pd.DataFrame(data).fillna(0)
-            st.success(f"✅ تم تحديد {len(df)} سهماً مؤهلاً")
-            st.dataframe(df)
+            st.error(f"❌ فشل الإرسال: {result.get('error')} | التفاصيل: {result.get('details')}")
 
-            # تجهيز الرسائل
-            messages = prepare_telegram_messages(df, params, telegram_message)
-            st.write(f"📨 عدد الرسائل المتولدة: {len(messages)}")
+# زر إرسال كل الرسائل
+if telegram_enabled and st.button("📤 إرسال كل الرسائل إلى Telegram"):
+    with st.spinner("📡 جاري الإرسال إلى تيليجرام..."):
+        results = telegram.send_batch(messages)
+        success_count = sum(1 for r in results if r.get("ok"))
 
-            # عرض جميع الرسائل وطول كل واحدة للتشخيص
-            for i, msg in enumerate(messages):
-                st.write(f"✉️ الرسالة {i+1} (الطول: {len(msg)}):")
-                st.code(msg)
-
-            # زر إرسال أول رسالة فقط
-            if messages and st.button("📤 إرسال أول رسالة فقط"):
-                result = telegram.send_message(messages[0])
-                st.write("📬 نتيجة الإرسال:", result)
-
-            # زر إرسال جميع الرسائل
-            if telegram_enabled and st.button("📤 إرسال كل الرسائل إلى Telegram"):
-                with st.spinner("📡 جاري الإرسال إلى تيليجرام..."):
-                    results = telegram.send_batch(messages)
-                    success_count = sum(1 for r in results if r.get("ok"))
-
-                    if success_count == len(messages):
-                        st.success(f"✅ تم إرسال كل ({len(messages)}) الرسائل بنجاح!")
-                        st.balloons()
-                    else:
-                        st.warning(f"⚠️ تم إرسال {success_count} من {len(messages)} رسالة فقط.")
-                        for i, result in enumerate(results):
-                            if not result.get("ok"):
-                                st.error(f"❌ فشل في الرسالة {i+1}: {result.get('error')} | التفاصيل: {result.get('details')}")
+        if success_count == len(messages):
+            st.success(f"✅ تم إرسال كل ({len(messages)}) الرسائل بنجاح!")
+            st.balloons()
+        else:
+            st.warning(f"⚠️ تم إرسال {success_count} من {len(messages)} رسالة فقط.")
+            for i, result in enumerate(results):
+                if not result.get("ok"):
+                    st.error(f"❌ فشل في الرسالة {i+1}: {result.get('error')} | التفاصيل: {result.get('details')}")
