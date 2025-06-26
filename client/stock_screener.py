@@ -3,6 +3,7 @@ import requests
 import pandas as pd
 import time
 from datetime import datetime
+import html  # تأكد من استيراد html للتعقيم
 
 # إعدادات API
 API_KEY = "CVROqS2TTsTM06ZNpYQJd5C1dXg1Amuv"
@@ -74,8 +75,6 @@ def get_stock_screener(params):
         st.error(f"خطأ في الاتصال بAPI: {str(e)}")
         return None
 
-import html  # في الأعلى
-
 def prepare_telegram_messages(df, params, custom_message):
     MAX_LENGTH = 4000
     messages = []
@@ -89,32 +88,32 @@ def prepare_telegram_messages(df, params, custom_message):
     header += f"- عدد الأسهم: {len(df)}\n\n"
 
     current_message = header
-for _, row in df.iterrows():
-    try:
+
+    for _, row in df.iterrows():
+        try:
             symbol = html.escape(str(row.get("symbol", "N/A")))
             company = html.escape(str(row.get("companyName", "")))[:25]
             price = f"${row['price']:.2f}" if "price" in row else ""
             dividend = f"{row['dividendYield']:.2f}%" if "dividendYield" in row else ""
             growth = f"{row['revenueGrowth']:.2f}%" if "revenueGrowth" in row else ""
-    
+
             stock_info = f"<code>{symbol}</code> | {company}...\n"
-     if price:
-        stock_info += f"💰 {price} | "
-     if dividend:
-        stock_info += f"📈 {dividend} | "
-     if growth:
-        stock_info += f"📊 {growth}\n"
-        stock_info += "――――――――――\n"
-    
-      if len(current_message) + len(stock_info) >= MAX_LENGTH:
-         messages.append(current_message.strip())
-         current_message = ""
+            if price:
+                stock_info += f"💰 {price} | "
+            if dividend:
+                stock_info += f"📈 {dividend} | "
+            if growth:
+                stock_info += f"📊 {growth}\n"
+            stock_info += "――――――――――\n"
 
-         current_message += stock_info
-     except Exception as e:
-          st.warning(f"⚠️ مشكلة في سطر: {e}")
-         continue   
+            if len(current_message) + len(stock_info) >= MAX_LENGTH:
+                messages.append(current_message.strip())
+                current_message = ""
 
+            current_message += stock_info
+        except Exception as e:
+            st.warning(f"⚠️ مشكلة في سطر: {e}")
+            continue
 
     # الرسالة الأخيرة
     if current_message.strip():
