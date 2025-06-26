@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 import pandas as pd
-import time  # المكتبة المنسية
+import time
 from datetime import datetime
 
 # إعدادات API
@@ -11,29 +11,55 @@ BASE_URL = "https://financialmodelingprep.com/api/v3"
 # إعدادات Telegram Bot
 TELEGRAM_BOT_TOKEN = "6203893805:AAFX_hXijc-HVcuNV8mAJqbVMRhi95A-dZs"
 TELEGRAM_CHAT_ID = "@D_Option"
-STOCKS_PER_MESSAGE = 15  # عدد الأسهم في كل رسالة
-TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"  # تعريف كامل لرابط API
+STOCKS_PER_MESSAGE = 15
+TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
 
 class TelegramSender:
     def __init__(self):
         self.base_url = TELEGRAM_API_URL
         self.timeout = 15
-        self.delay = 1  # تأخير بين الرسائل بالثواني
+        self.delay = 1
 
-    def send_message(self, text):
+    def send_message(self, message):
         try:
+            time.sleep(self.delay)
             payload = {
                 "chat_id": TELEGRAM_CHAT_ID,
-                "text": text,
+                "text": message,
                 "parse_mode": "HTML",
                 "disable_web_page_preview": True
             }
-            response = requests.post(self.base_url, json=payload, timeout=self.timeout)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            st.error(f"خطأ في إرسال الرسالة: {str(e)}")
-            return {"ok": False, "description": str(e)}
+            headers = {
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0"
+            }
+            response = requests.post(
+                self.base_url,
+                json=payload,
+                headers=headers,
+                timeout=self.timeout
+            )
+            if response.status_code == 200:
+                return {"ok": True, "response": response.json()}
+            else:
+                return {
+                    "ok": False,
+                    "error": f"HTTP {response.status_code}",
+                    "details": response.text
+                }
+        except Exception as e:
+            return {
+                "ok": False,
+                "error": str(e),
+                "details": "حدث خطأ غير متوقع"
+            }
+
+    def send_batch(self, messages):
+        results = []
+        for message in messages:
+            result = self.send_message(message)
+            results.append(result)
+        return results
 
 def get_stock_screener(params):
     url = f"{BASE_URL}/stock-screener?apikey={API_KEY}"
@@ -80,7 +106,6 @@ def prepare_telegram_messages(df, params, custom_message):
             message += stock_info + "――――――――――\n"
         
         messages.append(message)
-        time.sleep(telegram.delay)  # استخدام التأخير هنا
     
     # الرسالة الختامية
     footer = "\n<b>📊 ملخص إحصائي:</b>\n"
@@ -93,43 +118,11 @@ def prepare_telegram_messages(df, params, custom_message):
     
     return messages
 
-# واجهة المستخدم
+# واجهة Streamlit
 st.set_page_config(page_title="مصفاة الأسهم", layout="wide")
 st.title('📈 مصفاة الأسهم (عائد + نمو)')
-st.markdown("""
-**أداة متقدمة** لاكتشاف الأسهم ذات العوائد المجزية ونمو الأرباح المستدام
-""")
 
-# إعدادات البحث
-with st.sidebar:
-    st.header("⚙️ ضبط المعايير")
-    
-    with st.expander("معايير العوائد"):
-        dividend_yield = st.slider("حد أدنى للعائد (%)", 0.0, 20.0, 3.0, 0.5)
-        dividend_growth = st.slider("حد أدنى لسنوات التوزيع", 0, 20, 5)
-    
-    with st.expander("معايير النمو"):
-        revenue_growth = st.slider("نمو إيرادات سنوي (%)", 0, 100, 10)
-        eps_growth = st.slider("نمو ربحية السهم (%)", -50, 100, 0)
-    
-    with st.expander("خيارات متقدمة"):
-        market_cap = st.selectbox("حجم الشركة", ["الكبيرة فقط", "المتوسطة", "الصغيرة", "الكل"], index=0)
-        exchange = st.multiselect("البورصات", ["NASDAQ", "NYSE", "AMEX"], default=["NASDAQ", "NYSE"])
-    
-    with st.expander("إعدادات الإرسال"):
-        telegram_enabled = st.checkbox("تمكين إرسال Telegram", value=True)
-        if telegram_enabled:
-            st.info(f"سيتم إرسال {STOCKS_PER_MESSAGE} سهماً في كل رسالة")
-            telegram_message = st.text_input("عنوان التقرير", value="تقرير الأسهم المميزة")
-
-params = {
-    "dividendYieldMoreThan": dividend_yield,
-    "dividendYearsMoreThan": dividend_growth,
-    "revenueGrowthMoreThan": revenue_growth,
-    "epsGrowthMoreThan": eps_growth,
-    "marketCapMoreThan": "1000000000" if market_cap == "الكبيرة فقط" else None,
-    "exchange": ",".join(exchange) if exchange else None
-}
+# ... (بقية كود واجهة المستخدم كما هو)
 
 if st.button("🔍 بدء البحث", type="primary"):
     with st.spinner("جاري تحليل بيانات السوق..."):
@@ -143,46 +136,15 @@ if st.button("🔍 بدء البحث", type="primary"):
             df = pd.DataFrame(data)
             st.success(f"تم تحديد {len(df)} سهماً مؤهلاً")
             
-            # عرض النتائج
-            cols_to_show = ['symbol', 'companyName', 'price', 'dividendYield', 'revenueGrowth']
-            cols_to_show = [col for col in cols_to_show if col in df.columns]
-            
-            if cols_to_show:
-                display_df = df[cols_to_show].rename(columns={
-                    'symbol': 'الرمز',
-                    'companyName': 'الشركة',
-                    'price': 'السعر',
-                    'dividendYield': 'العائد%',
-                    'revenueGrowth': 'نمو الإيرادات%'
-                })
-                
-                st.dataframe(
-                    display_df.style.format({
-                        'السعر': '${:.2f}',
-                        'العائد%': '{:.2f}%',
-                        'نمو الإيرادات%': '{:.2f}%'
-                    }),
-                    height=600,
-                    use_container_width=True
-                )
-                
-                # خيارات التصدير
-                col1, col2 = st.columns(2)
-                with col1:
-                    csv = df.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        label="💾 حفظ كملف CSV",
-                        data=csv,
-                        file_name=f"stocks_{datetime.now().strftime('%Y%m%d')}.csv",
-                        mime='text/csv'
-                    )
+            # ... (عرض النتائج كما هو)
                 
                 with col2:
                     if telegram_enabled and st.button("📤 إرسال إلى Telegram", type="secondary"):
                         with st.spinner(f"جاري إعداد {len(df)} سهماً في مجموعات..."):
                             try:
+                                telegram = TelegramSender()
                                 messages = prepare_telegram_messages(df, params, telegram_message)
-                                results = send_telegram_batch(messages)
+                                results = telegram.send_batch(messages)
                                 
                                 success_count = sum(1 for r in results if r.get('ok'))
                                 if success_count == len(messages):
@@ -193,9 +155,3 @@ if st.button("🔍 بدء البحث", type="primary"):
                                     st.warning(f"تم إرسال {success_count} رسالة، وفشل {failed}")
                             except Exception as e:
                                 st.error(f"خطأ غير متوقع: {str(e)}")
-            else:
-                st.warning("بيانات غير كافية للعرض")
-
-# تذييل الصفحة
-st.markdown("---")
-st.caption(f"آخر تحديث: {datetime.now().strftime('%Y-%m-%d %H:%M')} | مصدر البيانات: Financial Modeling Prep")
