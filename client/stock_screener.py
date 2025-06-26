@@ -79,31 +79,27 @@ def prepare_telegram_messages(df, params, custom_message):
     MAX_LENGTH = 4000
     messages = []
 
+    # نأخذ أول 5 أسهم فقط
+    df = df.head(5)
+
     # رأس الرسالة
     header = f"<b>📊 {html.escape(custom_message)}</b>\n"
     header += f"⏳ {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n"
     header += "<b>🔍 معايير البحث:</b>\n"
     header += f"- العائد: {params['dividendYieldMoreThan']}%\n"
     header += f"- نمو الإيرادات: {params['revenueGrowthMoreThan']}%\n"
-    header += f"- عدد الأسهم: {len(df)}\n\n"
+    header += f"- عدد الأسهم المرسلة: {len(df)}\n\n"
 
     current_message = header
 
     for _, row in df.iterrows():
         try:
             symbol = html.escape(str(row.get("symbol", "N/A")))
-            company = html.escape(str(row.get("companyName", "")))[:25]
-            price = f"${row['price']:.2f}" if "price" in row else ""
-            dividend = f"{row['dividendYield']:.2f}%" if "dividendYield" in row else ""
-            growth = f"{row['revenueGrowth']:.2f}%" if "revenueGrowth" in row else ""
+            dividend = f"{row['dividendYield']:.2f}%" if "dividendYield" in row else "0.00%"
+            growth = f"{row['revenueGrowth']:.2f}%" if "revenueGrowth" in row else "0.00%"
 
-            stock_info = f"<code>{symbol}</code> | {company}...\n"
-            if price:
-                stock_info += f"💰 {price} | "
-            if dividend:
-                stock_info += f"📈 {dividend} | "
-            if growth:
-                stock_info += f"📊 {growth}\n"
+            # عرض مختصر: رمز السهم + العائد + نمو الإيرادات
+            stock_info = f"<code>{symbol}</code> | عائد: {dividend} | نمو: {growth}\n"
             stock_info += "――――――――――\n"
 
             if len(current_message) + len(stock_info) >= MAX_LENGTH:
@@ -119,13 +115,8 @@ def prepare_telegram_messages(df, params, custom_message):
     if current_message.strip():
         messages.append(current_message.strip())
 
-    # الرسالة الختامية
-    footer = "\n<b>📊 ملخص إحصائي:</b>\n"
-    if 'dividendYield' in df.columns:
-        footer += f"• متوسط العائد: {df['dividendYield'].mean():.2f}%\n"
-    if 'price' in df.columns:
-        footer += f"• متوسط السعر: ${df['price'].mean():.2f}\n"
-    footer += "\n⚡ تم الإنشاء بواسطة Stock Screener"
+    # رسالة ختامية بسيطة
+    footer = "\n⚡ تم الإنشاء بواسطة Stock Screener"
     messages.append(footer[:MAX_LENGTH])
 
     return messages
