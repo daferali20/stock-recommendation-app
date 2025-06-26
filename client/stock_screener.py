@@ -74,13 +74,15 @@ telegram_enabled = st.checkbox("📩 تفعيل الإرسال إلى تيليج
 telegram_message = st.text_input("💬 رسالة مخصصة لتيليجرام", "الأسهم ذات عائد مرتفع ونمو جيد")
 
 params = {
-    "dividendYieldMoreThan": dividend,
-    "revenueGrowthMoreThan": revenue_growth,
-    "limit": 100,
+    "dividendYieldMoreThan": 0.0,  # اجعلها 0 لتضمن ظهور بيانات
+    "revenueGrowthMoreThan": 0.0,
+    "limit": 10,
     "exchange": "NASDAQ"
 }
 
-telegram = TelegramSender()  # إنشاء كائن التيليجرام
+
+# إنشاء كائن TelegramSender
+telegram = TelegramSender()
 
 # زر اختبار تيليجرام
 if st.button("📨 اختبار إرسال Telegram"):
@@ -100,17 +102,21 @@ if st.button("🔍 بدء البحث", type="primary"):
             st.success(f"✅ تم تحديد {len(df)} سهماً مؤهلاً")
             st.dataframe(df)
 
+            # تجهيز الرسائل
             messages = prepare_telegram_messages(df, params, telegram_message)
             st.write(f"📨 عدد الرسائل المتولدة: {len(messages)}")
 
-            if messages:
-                st.subheader("📬 معاينة أول رسالة")
-                st.code(messages[0])
+            # عرض جميع الرسائل وطول كل واحدة للتشخيص
+            for i, msg in enumerate(messages):
+                st.write(f"✉️ الرسالة {i+1} (الطول: {len(msg)}):")
+                st.code(msg)
 
-            if st.button("📤 إرسال أول رسالة فقط"):
+            # زر إرسال أول رسالة فقط
+            if messages and st.button("📤 إرسال أول رسالة فقط"):
                 result = telegram.send_message(messages[0])
                 st.write("📬 نتيجة الإرسال:", result)
 
+            # زر إرسال جميع الرسائل
             if telegram_enabled and st.button("📤 إرسال كل الرسائل إلى Telegram"):
                 with st.spinner("📡 جاري الإرسال إلى تيليجرام..."):
                     results = telegram.send_batch(messages)
@@ -121,3 +127,6 @@ if st.button("🔍 بدء البحث", type="primary"):
                         st.balloons()
                     else:
                         st.warning(f"⚠️ تم إرسال {success_count} من {len(messages)} رسالة فقط.")
+                        for i, result in enumerate(results):
+                            if not result.get("ok"):
+                                st.error(f"❌ فشل في الرسالة {i+1}: {result.get('error')} | التفاصيل: {result.get('details')}")
