@@ -90,7 +90,7 @@ def prepare_telegram_messages(df, params, custom_message):
 
     current_message = header
 for _, row in df.iterrows():
-        try:
+    try:
             symbol = html.escape(str(row.get("symbol", "N/A")))
             company = html.escape(str(row.get("companyName", "")))[:25]
             price = f"${row['price']:.2f}" if "price" in row else ""
@@ -98,20 +98,20 @@ for _, row in df.iterrows():
             growth = f"{row['revenueGrowth']:.2f}%" if "revenueGrowth" in row else ""
     
             stock_info = f"<code>{symbol}</code> | {company}...\n"
-            if price:
+     if price:
                 stock_info += f"💰 {price} | "
-            if dividend:
+     if dividend:
                 stock_info += f"📈 {dividend} | "
-            if growth:
+     if growth:
                 stock_info += f"📊 {growth}\n"
             stock_info += "――――――――――\n"
     
-            if len(current_message) + len(stock_info) >= MAX_LENGTH:
+      if len(current_message) + len(stock_info) >= MAX_LENGTH:
                 messages.append(current_message.strip())
                 current_message = ""
 
             current_message += stock_info
-        except Exception as e:
+     except Exception as e:
             st.warning(f"⚠️ مشكلة في سطر: {e}")
             continue   
 
