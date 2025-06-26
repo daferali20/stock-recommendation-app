@@ -75,7 +75,7 @@ def get_stock_screener(params):
         return None
 
 def prepare_telegram_messages(df, params, custom_message):
-    MAX_LENGTH = 4000
+    MAX_LENGTH = 2000
     messages = []
 
     # رأس الرسالة
