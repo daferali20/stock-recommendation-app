@@ -78,7 +78,7 @@ def prepare_telegram_messages(df, params, custom_message):
     MAX_LENGTH = 4000
     messages = []
 
-    # الرسالة الافتتاحية
+    # رأس الرسالة
     header = f"<b>📊 {custom_message}</b>\n"
     header += f"⏳ {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n"
     header += "<b>🔍 معايير البحث:</b>\n"
@@ -86,12 +86,10 @@ def prepare_telegram_messages(df, params, custom_message):
     header += f"- نمو الإيرادات: {params['revenueGrowthMoreThan']}%\n"
     header += f"- عدد الأسهم: {len(df)}\n\n"
 
-    # الرسائل تبدأ بالهيدر
     current_message = header
 
-    for i, row in df.iterrows():
-        stock_info = f"<code>{row.get('symbol', 'N/A')}</code> | "
-        stock_info += f"{row.get('companyName', '')[:20]}...\n"
+    for _, row in df.iterrows():
+        stock_info = f"<code>{row.get('symbol', 'N/A')}</code> | {row.get('companyName', '')[:25]}...\n"
         if 'price' in row:
             stock_info += f"💰 ${row['price']:.2f} | "
         if 'dividendYield' in row:
@@ -100,15 +98,16 @@ def prepare_telegram_messages(df, params, custom_message):
             stock_info += f"📊 {row['revenueGrowth']:.2f}%\n"
         stock_info += "――――――――――\n"
 
-        # إذا تجاوز الطول المسموح، نحفظ الرسالة الحالية ونبدأ جديدة
+        # إذا تجاوزت الرسالة الحد الأقصى، نقسمها
         if len(current_message) + len(stock_info) >= MAX_LENGTH:
-            messages.append(current_message)
-            current_message = ""  # بداية رسالة جديدة
+            messages.append(current_message.strip())
+            current_message = ""
 
         current_message += stock_info
 
-    if current_message:
-        messages.append(current_message)
+    # أضف الرسالة المتبقية إن وجدت
+    if current_message.strip():
+        messages.append(current_message.strip())
 
     # الرسالة الختامية
     footer = "\n<b>📊 ملخص إحصائي:</b>\n"
@@ -117,13 +116,14 @@ def prepare_telegram_messages(df, params, custom_message):
     if 'price' in df.columns:
         footer += f"• متوسط السعر: ${df['price'].mean():.2f}\n"
     footer += "\n⚡ تم الإنشاء بواسطة Stock Screener"
-    if len(footer) >= MAX_LENGTH:
+
+    # تأكد أن الرسالة الأخيرة لا تتجاوز الحد
+    if len(footer) > MAX_LENGTH:
         messages.append(footer[:MAX_LENGTH])
     else:
         messages.append(footer)
 
     return messages
-
 
 # واجهة Streamlit
 st.set_page_config(page_title="مصفاة الأسهم", layout="wide")
