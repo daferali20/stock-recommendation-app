@@ -11,7 +11,7 @@ BASE_URL = "https://financialmodelingprep.com/api/v3"
 # إعدادات Telegram Bot
 TELEGRAM_BOT_TOKEN = "6203893805:AAFX_hXijc-HVcuNV8mAJqbVMRhi95A-dZs"
 TELEGRAM_CHAT_ID = "@D_Option"
-STOCKS_PER_MESSAGE = 15
+STOCKS_PER_MESSAGE = 5
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
 
 class TelegramSender:
