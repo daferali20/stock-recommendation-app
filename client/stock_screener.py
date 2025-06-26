@@ -99,21 +99,21 @@ for _, row in df.iterrows():
     
             stock_info = f"<code>{symbol}</code> | {company}...\n"
      if price:
-                stock_info += f"💰 {price} | "
+        stock_info += f"💰 {price} | "
      if dividend:
-                stock_info += f"📈 {dividend} | "
+        stock_info += f"📈 {dividend} | "
      if growth:
-                stock_info += f"📊 {growth}\n"
-            stock_info += "――――――――――\n"
+        stock_info += f"📊 {growth}\n"
+        stock_info += "――――――――――\n"
     
       if len(current_message) + len(stock_info) >= MAX_LENGTH:
-                messages.append(current_message.strip())
-                current_message = ""
+         messages.append(current_message.strip())
+         current_message = ""
 
-            current_message += stock_info
+         current_message += stock_info
      except Exception as e:
-            st.warning(f"⚠️ مشكلة في سطر: {e}")
-            continue   
+          st.warning(f"⚠️ مشكلة في سطر: {e}")
+         continue   
 
 
     # الرسالة الأخيرة
