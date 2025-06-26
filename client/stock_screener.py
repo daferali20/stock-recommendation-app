@@ -8,7 +8,7 @@ API_KEY = "CVROqS2TTsTM06ZNpYQJd5C1dXg1Amuv"
 BASE_URL = "https://financialmodelingprep.com/api/v3"
 
 # إعدادات Telegram Bot
-TELEGRAM_BOT_TOKEN = "6203893805:AAFX_hXijc-HVcuNV8mAJqbVMRhi95A-dZs"
+TELEGRAM_BOT_TOKEN = "7955161282:AAG2udkomniL-9kEgwdVheYXI52wVR3wiVM"
 TELEGRAM_CHAT_ID = "@D_Option"
 STOCKS_PER_MESSAGE = 20  # عدد الأسهم في كل رسالة
 
