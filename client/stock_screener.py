@@ -89,7 +89,7 @@ params = {
     "exchange": "NASDAQ"
 }
 
-telegram = TelegramSender(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
+#telegram = TelegramSender(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
 
 # زر اختبار تيليجرام
 if st.button("📨 اختبار إرسال Telegram"):
