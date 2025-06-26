@@ -4,10 +4,10 @@ import pandas as pd
 import html
 from datetime import datetime
 
-from telegram_alerts import TelegramSender  # استدعاء ملف إرسال التليجرام الخارجي
+from telegram_alerts import TelegramSender  # تأكد أن هذا الملف موجود ومهيأ
 
 # إعدادات API
-API_KEY = "CVROqS2TTsTM06ZNpYQJd5C1dXg1Amuv"
+API_KEY = "CVROqS2TTsTM06ZNpYQJd5A1uv"
 BASE_URL = "https://financialmodelingprep.com/api/v3"
 
 def get_stock_screener(params):
@@ -27,7 +27,8 @@ def prepare_telegram_messages(df, params, custom_message):
     MAX_LENGTH = 3500
     messages = []
 
-    df = df.head(5)  # فقط أول 5 أسهم
+    # فقط أول 5 أسهم
+    df = df.head(5)
 
     header = f"📊 {custom_message}\n"
     header += f"⏳ {datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
@@ -47,7 +48,7 @@ def prepare_telegram_messages(df, params, custom_message):
                 current_message = ""
 
             current_message += stock_info
-        except Exception as e:
+        except Exception:
             continue
 
     if current_message.strip():
@@ -58,17 +59,13 @@ def prepare_telegram_messages(df, params, custom_message):
 
     return messages
 
-
 # --- واجهة Streamlit ---
-
 st.set_page_config(page_title="مصفاة الأسهم", layout="wide")
 st.title("📈 مصفاة الأسهم (عائد + نمو)")
 
 col1, col2 = st.columns(2)
-
 with col1:
     dividend = st.slider("🔹 الحد الأدنى للعائد (%)", 0.0, 10.0, 3.0, 0.1)
-
 with col2:
     revenue_growth = st.slider("🔹 الحد الأدنى لنمو الإيرادات (%)", 0.0, 50.0, 10.0, 0.5)
 
@@ -82,7 +79,8 @@ params = {
     "exchange": "NASDAQ"
 }
 
-telegram = TelegramSender()  # تعريف كائن التليجرام
+# أنشئ كائن TelegramSender مرة واحدة
+telegram = TelegramSender()
 
 # زر اختبار تيليجرام
 if st.button("📨 اختبار إرسال Telegram"):
@@ -99,36 +97,36 @@ if st.button("🔍 بدء البحث", type="primary"):
             st.warning("⚠️ لا توجد نتائج مطابقة للمعايير")
         else:
             df = pd.DataFrame(data).fillna(0)
+
+            # تنظيف الأعمدة النصية لتجنب أخطاء pyarrow
+            for col in df.select_dtypes(include=['object']).columns:
+                df[col] = df[col].astype(str)
+
             st.success(f"✅ تم تحديد {len(df)} سهماً مؤهلاً")
             st.dataframe(df)
 
-            messages = prepare_telegram_messages(df, params, telegram_message)
-            st.write(f"📨 عدد الرسائل المتولدة: {len(messages)}")
+            # توليد الرسائل وتخزينها في حالة الجلسة
+            st.session_state['messages'] = prepare_telegram_messages(df, params, telegram_message)
+            st.write(f"📨 عدد الرسائل المتولدة: {len(st.session_state['messages'])}")
 
-            if messages:
-                st.subheader("📬 معاينة أول رسالة")
-                st.code(messages[0])
+            st.subheader("📬 معاينة أول رسالة")
+            st.code(st.session_state['messages'][0])
 
-            # زر إرسال أول رسالة فقط
-            if st.button("📤 إرسال أول رسالة فقط"):
-                with st.spinner("📤 جاري إرسال الرسالة الأولى..."):
-                    result = telegram.send_message(messages[0])
-                    if result.get("ok"):
-                        st.success("✅ تم إرسال الرسالة بنجاح!")
-                    else:
-                        st.error(f"❌ فشل الإرسال: {result.get('error')} | التفاصيل: {result.get('details')}")
+# أزرار إرسال الرسائل فقط إذا تم توليدها مسبقاً
+if 'messages' in st.session_state:
+    if st.button("📤 إرسال أول رسالة فقط"):
+        result = telegram.send_message(st.session_state['messages'][0])
+        st.write("📬 نتيجة الإرسال:", result)
 
-            # زر إرسال كل الرسائل
-            if telegram_enabled and st.button("📤 إرسال كل الرسائل إلى Telegram"):
-                with st.spinner("📡 جاري الإرسال إلى تيليجرام..."):
-                    results = telegram.send_batch(messages)
-                    success_count = sum(1 for r in results if r.get("ok"))
+    if telegram_enabled and st.button("📤 إرسال كل الرسائل إلى Telegram"):
+        with st.spinner("📡 جاري الإرسال إلى تيليجرام..."):
+            results = telegram.send_batch(st.session_state['messages'])
+            success_count = sum(1 for r in results if r.get("ok"))
 
-                    if success_count == len(messages):
-                        st.success(f"✅ تم إرسال كل ({len(messages)}) الرسائل بنجاح!")
-                        st.balloons()
-                    else:
-                        st.warning(f"⚠️ تم إرسال {success_count} من {len(messages)} رسالة فقط.")
-                        for i, result in enumerate(results):
-                            if not result.get("ok"):
-                                st.error(f"❌ فشل في الرسالة {i+1}: {result.get('error')} | التفاصيل: {result.get('details')}")
+            if success_count == len(st.session_state['messages']):
+                st.success(f"✅ تم إرسال كل ({len(st.session_state['messages'])}) الرسائل بنجاح!")
+                st.balloons()
+            else:
+                st.warning(f"⚠️ تم إرسال {success_count} من {len(st.session_state['messages'])} رسالة فقط.")
+else:
+    st.info("❗ الرجاء إجراء البحث أولاً لتوليد الرسائل قبل الإرسال.")
