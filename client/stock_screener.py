@@ -91,25 +91,25 @@ def prepare_telegram_messages(df, params, custom_message):
     current_message = header
 
     for _, row in df.iterrows():
-    try:
-        symbol = html.escape(str(row.get("symbol", "N/A")))
-        company = html.escape(str(row.get("companyName", "")))[:25]
-        price = f"${row['price']:.2f}" if "price" in row else ""
-        dividend = f"{row['dividendYield']:.2f}%" if "dividendYield" in row else ""
-        growth = f"{row['revenueGrowth']:.2f}%" if "revenueGrowth" in row else ""
-
-        stock_info = f"<code>{symbol}</code> | {company}...\n"
-        if price:
-            stock_info += f"💰 {price} | "
-        if dividend:
-            stock_info += f"📈 {dividend} | "
-        if growth:
-            stock_info += f"📊 {growth}\n"
-        stock_info += "――――――――――\n"
-
-        if len(current_message) + len(stock_info) >= MAX_LENGTH:
-            messages.append(current_message.strip())
-            current_message = ""
+            try:
+            symbol = html.escape(str(row.get("symbol", "N/A")))
+            company = html.escape(str(row.get("companyName", "")))[:25]
+            price = f"${row['price']:.2f}" if "price" in row else ""
+            dividend = f"{row['dividendYield']:.2f}%" if "dividendYield" in row else ""
+            growth = f"{row['revenueGrowth']:.2f}%" if "revenueGrowth" in row else ""
+    
+            stock_info = f"<code>{symbol}</code> | {company}...\n"
+            if price:
+                stock_info += f"💰 {price} | "
+            if dividend:
+                stock_info += f"📈 {dividend} | "
+            if growth:
+                stock_info += f"📊 {growth}\n"
+            stock_info += "――――――――――\n"
+    
+            if len(current_message) + len(stock_info) >= MAX_LENGTH:
+                messages.append(current_message.strip())
+                current_message = ""
 
         current_message += stock_info
     except Exception as e:
