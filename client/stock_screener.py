@@ -74,12 +74,14 @@ def get_stock_screener(params):
         st.error(f"خطأ في الاتصال بAPI: {str(e)}")
         return None
 
+import html  # في الأعلى
+
 def prepare_telegram_messages(df, params, custom_message):
-    MAX_LENGTH = 1000
+    MAX_LENGTH = 4000
     messages = []
 
     # رأس الرسالة
-    header = f"<b>📊 {custom_message}</b>\n"
+    header = f"<b>📊 {html.escape(custom_message)}</b>\n"
     header += f"⏳ {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n"
     header += "<b>🔍 معايير البحث:</b>\n"
     header += f"- العائد: {params['dividendYieldMoreThan']}%\n"
@@ -89,23 +91,29 @@ def prepare_telegram_messages(df, params, custom_message):
     current_message = header
 
     for _, row in df.iterrows():
-        stock_info = f"<code>{row.get('symbol', 'N/A')}</code> | {row.get('companyName', '')[:25]}...\n"
-        if 'price' in row:
-            stock_info += f"💰 ${row['price']:.2f} | "
-        if 'dividendYield' in row:
-            stock_info += f"📈 {row['dividendYield']:.2f}% | "
-        if 'revenueGrowth' in row:
-            stock_info += f"📊 {row['revenueGrowth']:.2f}%\n"
-        stock_info += "――――――――――\n"
+        try:
+            symbol = html.escape(str(row.get("symbol", "N/A")))
+            company = html.escape(str(row.get("companyName", "")))[:25]
+            stock_info = f"<code>{symbol}</code> | {company}...\n"
+            if "price" in row:
+                stock_info += f"💰 ${row['price']:.2f} | "
+            if "dividendYield" in row:
+                stock_info += f"📈 {row['dividendYield']:.2f}% | "
+            if "revenueGrowth" in row:
+                stock_info += f"📊 {row['revenueGrowth']:.2f}%\n"
+            stock_info += "――――――――――\n"
 
-        # إذا تجاوزت الرسالة الحد الأقصى، نقسمها
-        if len(current_message) + len(stock_info) >= MAX_LENGTH:
-            messages.append(current_message.strip())
-            current_message = ""
+            # إذا تجاوزنا الحد نبدأ رسالة جديدة
+            if len(current_message) + len(stock_info) >= MAX_LENGTH:
+                messages.append(current_message.strip())
+                current_message = ""
 
-        current_message += stock_info
+            current_message += stock_info
+        except Exception as e:
+            # لتفادي أخطاء غير متوقعة في صفوف معينة
+            continue
 
-    # أضف الرسالة المتبقية إن وجدت
+    # الرسالة الأخيرة
     if current_message.strip():
         messages.append(current_message.strip())
 
@@ -116,14 +124,10 @@ def prepare_telegram_messages(df, params, custom_message):
     if 'price' in df.columns:
         footer += f"• متوسط السعر: ${df['price'].mean():.2f}\n"
     footer += "\n⚡ تم الإنشاء بواسطة Stock Screener"
-
-    # تأكد أن الرسالة الأخيرة لا تتجاوز الحد
-    if len(footer) > MAX_LENGTH:
-        messages.append(footer[:MAX_LENGTH])
-    else:
-        messages.append(footer)
+    messages.append(footer[:MAX_LENGTH])
 
     return messages
+
 
 # واجهة Streamlit
 st.set_page_config(page_title="مصفاة الأسهم", layout="wide")
