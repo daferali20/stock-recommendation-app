@@ -23,41 +23,6 @@ def get_stock_screener(params):
         st.error(f"خطأ في الاتصال بAPI: {str(e)}")
         return None
 
-def prepare_telegram_messages(df, params, custom_message):
-    MAX_LENGTH = 3500
-    messages = []
-
-    # فقط أول 5 أسهم
-    df = df.head(5)
-
-    header = f"📊 {custom_message}\n"
-    header += f"⏳ {datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
-    header += f"🔍 الشروط: عائد > {params['dividendYieldMoreThan']}%، نمو > {params['revenueGrowthMoreThan']}%\n\n"
-
-    current_message = header
-    for _, row in df.iterrows():
-        try:
-            symbol = str(row.get("symbol", "N/A"))
-            dividend = f"{row.get('dividendYield', 0):.2f}%"
-            growth = f"{row.get('revenueGrowth', 0):.2f}%"
-
-            stock_info = f"{symbol} | عائد: {dividend} | نمو: {growth}\n"
-
-            if len(current_message) + len(stock_info) > MAX_LENGTH:
-                messages.append(current_message)
-                current_message = ""
-
-            current_message += stock_info
-        except Exception:
-            continue
-
-    if current_message.strip():
-        messages.append(current_message.strip())
-
-    footer = "\n⚡ تم الإنشاء تلقائيًا"
-    messages.append(footer)
-
-    return messages
 
 # --- واجهة Streamlit ---
 st.set_page_config(page_title="مصفاة الأسهم", layout="wide")
