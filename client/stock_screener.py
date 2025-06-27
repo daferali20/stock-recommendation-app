@@ -1,19 +1,15 @@
 import streamlit as st
 import requests
 import pandas as pd
-import html
 from datetime import datetime
 
 from telegram_alerts import TelegramSender  # تأكد أن هذا الملف موجود ومهيأ
 
-# إعدادات API
-
-
 # إعدادات Alpha Vantage
-API_KEY = "S6G0CLDFPAW2NKNA"  # استبدل هذا بالمفتاح الحقيقي
+API_KEY = "S6G0CLDFPAW2NKNA"
 BASE_URL = "https://www.alphavantage.co/query"
 
-# دالة للحصول على بيانات يومية للسهم من Alpha Vantage
+# دالة لجلب البيانات اليومية للسهم
 def get_daily_stock_data(symbol):
     url = f"{BASE_URL}?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={API_KEY}&outputsize=compact"
     try:
@@ -31,13 +27,12 @@ def get_daily_stock_data(symbol):
         st.error(f"خطأ في الاتصال بـ Alpha Vantage API: {str(e)}")
         return None
 
+# تجهيز رسائل تيليجرام
 def prepare_telegram_messages(df, params, custom_message):
     MAX_LENGTH = 3500
     messages = []
 
-    # فقط أول 5 أسهم
-    df = df.head(5)
-
+    df = df.head(5)  # أول 5 أسهم فقط
     header = f"📊 {custom_message}\n"
     header += f"⏳ {datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
     header += f"🔍 الشروط: عائد > {params['dividendYieldMoreThan']}%، نمو > {params['revenueGrowthMoreThan']}%\n\n"
@@ -48,23 +43,20 @@ def prepare_telegram_messages(df, params, custom_message):
             symbol = str(row.get("symbol", "N/A"))
             dividend = f"{row.get('dividendYield', 0):.2f}%"
             growth = f"{row.get('revenueGrowth', 0):.2f}%"
-
             stock_info = f"{symbol} | عائد: {dividend} | نمو: {growth}\n"
 
             if len(current_message) + len(stock_info) > MAX_LENGTH:
                 messages.append(current_message)
-                current_message = ""
-
-            current_message += stock_info
+                current_message = header + stock_info
+            else:
+                current_message += stock_info
         except Exception:
             continue
 
     if current_message.strip():
         messages.append(current_message.strip())
 
-    footer = "\n⚡ تم الإنشاء تلقائيًا"
-    messages.append(footer)
-
+    messages[-1] += "\n⚡ تم الإنشاء تلقائيًا"
     return messages
 
 # --- واجهة Streamlit ---
@@ -77,6 +69,9 @@ with col1:
 with col2:
     revenue_growth = st.slider("🔹 الحد الأدنى لنمو الإيرادات (%)", 0.0, 50.0, 10.0, 0.5)
 
+symbols_input = st.text_input("✏️ أدخل رموز الأسهم (مفصولة بفاصلة)", "AAPL, MSFT, NVDA, GOOGL")
+symbols = [s.strip().upper() for s in symbols_input.split(",") if s.strip()]
+
 telegram_enabled = st.checkbox("📩 تفعيل الإرسال إلى تيليجرام", value=True)
 telegram_message = st.text_input("💬 رسالة مخصصة لتيليجرام", "الأسهم ذات عائد مرتفع ونمو جيد")
 
@@ -87,37 +82,45 @@ params = {
     "exchange": "NASDAQ"
 }
 
-# أنشئ كائن TelegramSender مرة واحدة
 telegram = TelegramSender()
 
-# زر اختبار تيليجرام
 if st.button("📨 اختبار إرسال Telegram"):
     test_result = telegram.send_message("✅ اختبار مباشر من تطبيق Streamlit")
     st.write("📬 نتيجة الاختبار:", test_result)
 
 if st.button("🔍 بدء البحث", type="primary"):
     with st.spinner("جاري تحليل بيانات السوق..."):
-        df_dict = {}
+        all_data = []
+
         for symbol in symbols:
             df = get_daily_stock_data(symbol)
             if df is not None:
-                df_dict[symbol] = df
+                latest_close = df["4. close"].iloc[-1]
+                dividend_yield = round(1.5 + 1.0 * hash(symbol) % 5, 2)  # وهمي للتجربة
+                revenue_growth = round(5.0 + 1.0 * hash(symbol[::-1]) % 20, 2)  # وهمي للتجربة
 
-            # تنظيف الأعمدة النصية لتجنب أخطاء pyarrow
-            for col in df.select_dtypes(include=['object']).columns:
-                df[col] = df[col].astype(str)
+                if dividend_yield >= dividend and revenue_growth >= revenue_growth:
+                    all_data.append({
+                        "symbol": symbol,
+                        "dividendYield": dividend_yield,
+                        "revenueGrowth": revenue_growth,
+                        "close": latest_close
+                    })
 
-            st.success(f"✅ تم تحديد {len(df)} سهماً مؤهلاً")
-            st.dataframe(df)
+        if all_data:
+            df_result = pd.DataFrame(all_data)
+            st.success(f"✅ تم تحديد {len(df_result)} سهمًا مؤهلًا")
+            st.dataframe(df_result)
 
-            # توليد الرسائل وتخزينها في حالة الجلسة
-            st.session_state['messages'] = prepare_telegram_messages(df, params, telegram_message)
-            st.write(f"📨 عدد الرسائل المتولدة: {len(st.session_state['messages'])}")
+            messages = prepare_telegram_messages(df_result, params, telegram_message)
+            st.session_state['messages'] = messages
 
+            st.write(f"📨 عدد الرسائل المتولدة: {len(messages)}")
             st.subheader("📬 معاينة أول رسالة")
-            st.code(st.session_state['messages'][0])
+            st.code(messages[0])
+        else:
+            st.warning("⚠️ لا توجد أسهم مطابقة للمعايير.")
 
-# أزرار إرسال الرسائل فقط إذا تم توليدها مسبقاً
 if 'messages' in st.session_state:
     if st.button("📤 إرسال أول رسالة فقط"):
         result = telegram.send_message(st.session_state['messages'][0])
@@ -127,11 +130,12 @@ if 'messages' in st.session_state:
         with st.spinner("📡 جاري الإرسال إلى تيليجرام..."):
             results = telegram.send_batch(st.session_state['messages'])
             success_count = sum(1 for r in results if r.get("ok"))
+            total = len(st.session_state['messages'])
 
-            if success_count == len(st.session_state['messages']):
-                st.success(f"✅ تم إرسال كل ({len(st.session_state['messages'])}) الرسائل بنجاح!")
+            if success_count == total:
+                st.success(f"✅ تم إرسال كل ({total}) الرسائل بنجاح!")
                 st.balloons()
             else:
-                st.warning(f"⚠️ تم إرسال {success_count} من {len(st.session_state['messages'])} رسالة فقط.")
+                st.warning(f"⚠️ تم إرسال {success_count} من {total} رسالة فقط.")
 else:
-    st.info("❗ الرجاء إجراء البحث أولاً لتوليد الرسائل قبل الإرسال.")
+    st.info("❗ الرجاء إجراء البحث أولًا لتوليد الرسائل قبل الإرسال.")
