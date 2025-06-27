@@ -7,20 +7,28 @@ from datetime import datetime
 from telegram_alerts import TelegramSender  # تأكد أن هذا الملف موجود ومهيأ
 
 # إعدادات API
-API_KEY = "CVROqS2TTsTM06ZNpYQJd5C1dXg1Amuv"
-BASE_URL = "https://financialmodelingprep.com/api/v3"
 
-def get_stock_screener(params):
-    url = f"{BASE_URL}/stock-screener?apikey={API_KEY}"
-    for key, value in params.items():
-        if value is not None:
-            url += f"&{key}={value}"
+
+# إعدادات Alpha Vantage
+API_KEY = ""S6G0CLDFPAW2NKNA""  # استبدل هذا بالمفتاح الحقيقي
+BASE_URL = "https://www.alphavantage.co/query"
+
+# دالة للحصول على بيانات يومية للسهم من Alpha Vantage
+def get_daily_stock_data(symbol):
+    url = f"{BASE_URL}?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={API_KEY}&outputsize=compact"
     try:
         response = requests.get(url, timeout=15)
         response.raise_for_status()
-        return response.json()
+        data = response.json()
+        if "Time Series (Daily)" in data:
+            df = pd.DataFrame(data['Time Series (Daily)']).T
+            df = df.astype(float)
+            df.index = pd.to_datetime(df.index)
+            return df
+        else:
+            return None
     except requests.exceptions.RequestException as e:
-        st.error(f"خطأ في الاتصال بAPI: {str(e)}")
+        st.error(f"خطأ في الاتصال بـ Alpha Vantage API: {str(e)}")
         return None
 
 def prepare_telegram_messages(df, params, custom_message):
