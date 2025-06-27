@@ -28,7 +28,7 @@ def prepare_telegram_messages(df, params, custom_message):
     MAX_LENGTH = 3500
     messages = []
 
-    df = df.head(5)  # أول 5 أسهم فقط
+    df = df.head(15)  # أول 5 أسهم فقط
     header = f"📊 {custom_message}\n"
     header += f"⏳ {datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
     header += f"🔍 الشروط: عائد > {params['dividendYieldMoreThan']}%، نمو > {params['revenueGrowthMoreThan']}%\n\n"
