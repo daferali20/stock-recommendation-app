@@ -10,7 +10,7 @@ from telegram_alerts import TelegramSender  # تأكد أن هذا الملف م
 
 
 # إعدادات Alpha Vantage
-API_KEY = ""S6G0CLDFPAW2NKNA""  # استبدل هذا بالمفتاح الحقيقي
+API_KEY = "S6G0CLDFPAW2NKNA"  # استبدل هذا بالمفتاح الحقيقي
 BASE_URL = "https://www.alphavantage.co/query"
 
 # دالة للحصول على بيانات يومية للسهم من Alpha Vantage
