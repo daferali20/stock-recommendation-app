@@ -28,7 +28,7 @@ def prepare_telegram_messages(df, params, custom_message):
     MAX_LENGTH = 3500
     messages = []
 
-    df = df.head(15)  # أول 5 أسهم فقط
+    df = df.head(10)
     header = f"📊 {custom_message}\n"
     header += f"⏳ {datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
     header += f"🔍 الشروط: عائد > {params['dividendYieldMoreThan']}%، نمو > {params['revenueGrowthMoreThan']}%\n\n"
@@ -37,9 +37,20 @@ def prepare_telegram_messages(df, params, custom_message):
     for _, row in df.iterrows():
         try:
             symbol = str(row.get("symbol", "N/A"))
-            dividend = f"{row.get('dividendYield', 0):.2f}%"
-            growth = f"{row.get('revenueGrowth', 0):.2f}%"
-            stock_info = f"{symbol} | عائد: {dividend} | نمو: {growth}\n"
+
+            # حساب العائد التوزيعي إن وجد
+            last_dividend = row.get("lastAnnualDividend", 0)
+            price = row.get("price", 1)
+            if last_dividend and price:
+                dividend = (last_dividend / price) * 100
+                dividend_str = f"{dividend:.2f}%"
+            else:
+                dividend_str = "غير متوفر"
+
+            # لا يوجد revenueGrowth، فيمكنك تركه أو استبداله لاحقًا ببيانات حقيقية من Endpoint آخر
+            growth_str = "غير متوفر"
+
+            stock_info = f"{symbol} | عائد: {dividend_str} | نمو: {growth_str}\n"
 
             if len(current_message) + len(stock_info) > MAX_LENGTH:
                 messages.append(current_message)
