@@ -95,16 +95,13 @@ if st.button("📨 اختبار إرسال Telegram"):
     test_result = telegram.send_message("✅ اختبار مباشر من تطبيق Streamlit")
     st.write("📬 نتيجة الاختبار:", test_result)
 
-# زر البحث وتحليل الأسهم
 if st.button("🔍 بدء البحث", type="primary"):
     with st.spinner("جاري تحليل بيانات السوق..."):
-        #data = get_stock_screener(params)
-        #if data is None:
-            st.error("❌ تعذر الاتصال بمصدر البيانات")
-        #elif not data:
-            st.warning("⚠️ لا توجد نتائج مطابقة للمعايير")
-        else:
-            df = pd.DataFrame(data).fillna(0)
+        df_dict = {}
+        for symbol in symbols:
+            df = get_daily_stock_data(symbol)
+            if df is not None:
+                df_dict[symbol] = df
 
             # تنظيف الأعمدة النصية لتجنب أخطاء pyarrow
             for col in df.select_dtypes(include=['object']).columns:
