@@ -99,7 +99,7 @@ if st.button("📨 اختبار إرسال Telegram"):
 if st.button("🔍 بدء البحث", type="primary"):
     with st.spinner("جاري تحليل بيانات السوق..."):
         #data = get_stock_screener(params)
-        if data is None:
+        #if data is None:
             st.error("❌ تعذر الاتصال بمصدر البيانات")
         elif not data:
             st.warning("⚠️ لا توجد نتائج مطابقة للمعايير")
