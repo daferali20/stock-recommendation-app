@@ -101,7 +101,7 @@ if st.button("🔍 بدء البحث", type="primary"):
         #data = get_stock_screener(params)
         #if data is None:
             st.error("❌ تعذر الاتصال بمصدر البيانات")
-        elif not data:
+        #elif not data:
             st.warning("⚠️ لا توجد نتائج مطابقة للمعايير")
         else:
             df = pd.DataFrame(data).fillna(0)
