@@ -96,6 +96,7 @@ if st.button("🔍 بدء البحث", type="primary"):
             st.warning("⚠️ لا توجد نتائج مطابقة للمعايير")
         else:
             df = pd.DataFrame(data).fillna(0)
+            df = df[(df["marketCap"] > 0) & (df["price"] > 0)]
 
             # تنظيف الأعمدة النصية
             for col in df.select_dtypes(include=['object']).columns:
